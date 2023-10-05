@@ -3,6 +3,7 @@ package WizardTD;
 import processing.core.PApplet;
 import processing.core.PImage;
 import processing.data.JSONArray;
+import processing.data.JSONArray;
 import processing.data.JSONObject;
 import processing.event.MouseEvent;
 
@@ -10,13 +11,13 @@ import java.awt.Graphics2D;
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 
-import java.io.*;
+//import java.io.*;
 import java.util.*;
 
 public class App extends PApplet {
 
     private PImage[][] preprocessedPaths;
-    private char[][] layout;
+    char[][] layout;
     private PImage grassImg;
     private PImage shrubImg;
     private PImage wizardHouseImg;
@@ -27,7 +28,19 @@ public class App extends PApplet {
     private PImage tower0Img;
     private PImage tower1Img;
     private PImage tower2Img;
+    private PImage gremlinImg;
+    private PImage gremlin1Img;
+    private PImage gremlin2Img;
+    private PImage gremlin3Img;
+    private PImage gremlin4Img;
+    private PImage gremlin5Img;
+    private PImage beetleImg;
+    private PImage wormImg;
     //private PImage rotatedPathImg;
+
+    private List<Wave> waves;
+    private List<Monster> activeMonsters;
+    private int currentWaveIndex = 0;
 
     public static final int CELLSIZE = 32;
     public static final int SIDEBAR = 120;
@@ -44,7 +57,7 @@ public class App extends PApplet {
     
 
     public App() {
-        this.configPath = "../config.json";
+        this.configPath = "config.json";
     }
 
     //Initialise the setting of the window size.
@@ -61,12 +74,31 @@ public class App extends PApplet {
         try {
             JSONObject config = loadJSONObject(configPath);
             String layoutFilePath = config.getString("layout");
-            layout = readLayoutFile("../" + layoutFilePath);  // Adding ../ to navigate back to root from src
+            layout = readLayoutFile(layoutFilePath);
+
+            JSONArray waveData = config.getJSONArray("waves");
+            waves = new ArrayList<>();
+            for (int i = 0; i < waveData.size(); i++) {
+                JSONObject waveObject = waveData.getJSONObject(i);
+                float pre_wave_pause = waveObject.getFloat("pre_wave_pause");
+                float duration = waveObject.getFloat("duration");
+                
+                JSONArray monstersData = waveObject.getJSONArray("monsters");
+                List<MonsterType> monsterTypes = new ArrayList<>();
+                for (int j = 0; j < monstersData.size(); j++) {
+                    JSONObject monsterObject = monstersData.getJSONObject(j);
+                    monsterTypes.add(new MonsterType(
+                        monsterObject.getString("type"),
+                        monsterObject.getFloat("hp"),
+                        monsterObject.getFloat("speed"),
+                        monsterObject.getFloat("armour"),
+                        monsterObject.getFloat("mana_gained_on_kill")
+                    ));
+                } waves.add(new Wave(pre_wave_pause, duration, monsterTypes, this));
+            } activeMonsters = new ArrayList<>();
         } catch (Exception e) {
             e.printStackTrace();
         }
-    
-        
         // Load images during setup
         grassImg = loadImage("src/main/resources/WizardTD/grass.png");
         shrubImg = loadImage("src/main/resources/WizardTD/shrub.png");
@@ -78,6 +110,15 @@ public class App extends PApplet {
         path1Img = loadImage("src/main/resources/WizardTD/path1.png");
         path2Img = loadImage("src/main/resources/WizardTD/path2.png");
         path3Img = loadImage("src/main/resources/WizardTD/path3.png");
+        gremlinImg = loadImage("src/main/resources/WizardTD/gremlin.png");
+        gremlin1Img = loadImage("src/main/resources/WizardTD/gremlin1.png");
+        gremlin2Img = loadImage("src/main/resources/WizardTD/gremlin2.png");
+        gremlin3Img = loadImage("src/main/resources/WizardTD/gremlin3.png");
+        gremlin4Img = loadImage("src/main/resources/WizardTD/gremlin4.png");
+        gremlin5Img = loadImage("src/main/resources/WizardTD/gremlin5.png");
+        beetleImg = loadImage("src/main/resources/WizardTD/beetle.png");
+        wormImg = loadImage("src/main/resources/WizardTD/worm.png");
+
         
         preprocessedPaths = new PImage[layout.length][layout[0].length];
         determinePaths();
@@ -152,7 +193,6 @@ public class App extends PApplet {
             for (int j = 0; j < layout[i].length; j++) {
                 if (layout[i][j] == 'X') {
                     List<String> directions = new ArrayList<>();
-                    System.out.println(layout[i]);
                     if (i > 0 && layout[i-1][j] == 'X') directions.add("above");
                     if (i < layout.length-1 && layout[i+1][j] == 'X') directions.add("below");
                     if (j > 0 && layout[i][j-1] == 'X') directions.add("left");
@@ -212,6 +252,31 @@ public class App extends PApplet {
         }
     }
 
+    private List<int[]> findBoundaryPathTiles() {
+        List<int[]> boundaryTiles = new ArrayList<>();
+    
+        // Check top and bottom boundaries
+        for (int x = 0; x < BOARD_WIDTH; x++) {
+            if (layout[0][x] == 'X') {
+                boundaryTiles.add(new int[]{x, 0});
+            }
+            if (layout[BOARD_HEIGHT - 1][x] == 'X') {
+                boundaryTiles.add(new int[]{x, BOARD_HEIGHT - 1});
+            }
+        }
+        
+        // Check left and right boundaries
+        for (int y = 0; y < BOARD_HEIGHT; y++) {
+            if (layout[y][0] == 'X') {
+                boundaryTiles.add(new int[]{0, y});
+            }
+            if (layout[y][BOARD_WIDTH - 1] == 'X') {
+                boundaryTiles.add(new int[]{BOARD_WIDTH - 1, y});
+            }
+        }
+    
+        return boundaryTiles;
+    }
 
 
 
@@ -227,6 +292,29 @@ public class App extends PApplet {
      */
 	@Override
     public void draw() {
+        if (currentWaveIndex < waves.size()) {
+            Wave currentWave = waves.get(currentWaveIndex);
+            currentWave.update(1.0f / FPS);
+            
+            if (currentWave.shouldSpawnMonster()) {
+                MonsterType monsterType = currentWave.getRandomMonsterType();
+                
+                // Get a list of valid starting positions
+                List<int[]> validStartingPositions = findBoundaryPathTiles();
+                if (!validStartingPositions.isEmpty()) {
+                    // Choose a random starting position from the list
+                    int randomIndex = (int) (Math.random() * validStartingPositions.size());
+                    int[] startPosition = validStartingPositions.get(randomIndex);
+                    
+                    activeMonsters.add(new Monster(monsterType, this, startPosition));
+                }
+                
+                if (currentWave.isWaveComplete()) {
+                    currentWaveIndex++; // Move to the next wave
+                }
+            }
+        }
+        
         // Draw the board based on layout
         for (int y = 0; y < BOARD_HEIGHT; y++) {
             for (int x = 0; x < BOARD_WIDTH; x++) {
@@ -237,12 +325,6 @@ public class App extends PApplet {
                     case 'X':
                         PImage rotatedPathImg = preprocessedPaths[y][x];
                         image(rotatedPathImg, x * CELLSIZE, y * CELLSIZE + TOPBAR, CELLSIZE, CELLSIZE);
-                           
-
-
-                        //PImage rotatedPathImg = determinePaths();
-                        //image(rotatedPathImg, x * CELLSIZE, y * CELLSIZE + TOPBAR, CELLSIZE, CELLSIZE);
-                        
                         break;
                     case 'S':
                         image(shrubImg, x * CELLSIZE, y * CELLSIZE + TOPBAR, CELLSIZE, CELLSIZE);
@@ -253,7 +335,7 @@ public class App extends PApplet {
                 }
             }
         }
-    
+
         // Drawing the wizard's house (drawing it separately to ensure it's on top of other tiles)
         for (int y = 0; y < BOARD_HEIGHT; y++) {
             for (int x = 0; x < BOARD_WIDTH; x++) {
@@ -266,6 +348,21 @@ public class App extends PApplet {
             }
         }
 
+        // Move and draw monsters
+        Iterator<Monster> iterator = activeMonsters.iterator();
+        while (iterator.hasNext()) {
+            Monster monster = iterator.next();
+            monster.move();
+            monster.draw();
+
+            // Check if the monster has reached the wizard's house
+            if (layout[monster.getPosition()[1]][monster.getPosition()[0]] == 'W') {
+                // End the game
+                println("Game Over!");
+                noLoop(); // Stop the draw loop
+            }
+        }
+
         // Drawing the brown topbar
         fill(150, 108, 51);
         rect(0, 0, WIDTH, TOPBAR);
@@ -274,6 +371,7 @@ public class App extends PApplet {
         fill(150, 108, 51);
         rect(CELLSIZE * BOARD_WIDTH, 0, SIDEBAR, HEIGHT);
     }
+
     
 
     public static void main(String[] args) {
