@@ -38,8 +38,8 @@ public class App extends PApplet {
     private PImage wormImg;
     //private PImage rotatedPathImg;
 
-    private List<Wave> waves;
-    private List<Monster> activeMonsters;
+    private List<Wave> waves = new ArrayList<>();
+    private List<Monster> activeMonsters = new ArrayList<>();
     private int currentWaveIndex = 0;
 
     public static final int CELLSIZE = 32;
@@ -76,26 +76,30 @@ public class App extends PApplet {
             String layoutFilePath = config.getString("layout");
             layout = readLayoutFile(layoutFilePath);
 
-            JSONArray waveData = config.getJSONArray("waves");
-            waves = new ArrayList<>();
-            for (int i = 0; i < waveData.size(); i++) {
-                JSONObject waveObject = waveData.getJSONObject(i);
-                float pre_wave_pause = waveObject.getFloat("pre_wave_pause");
-                float duration = waveObject.getFloat("duration");
+            JSONArray wavesArray = config.getJSONArray("waves");
+            for (int i = 0; i < wavesArray.size(); i++) {
+                JSONObject waveData = wavesArray.getJSONObject(i);
+                Wave wave = new Wave(waveData.getFloat("pre_wave_pause"), waveData.getFloat("duration"), this);
+            
                 
-                JSONArray monstersData = waveObject.getJSONArray("monsters");
-                List<MonsterType> monsterTypes = new ArrayList<>();
-                for (int j = 0; j < monstersData.size(); j++) {
-                    JSONObject monsterObject = monstersData.getJSONObject(j);
-                    monsterTypes.add(new MonsterType(
-                        monsterObject.getString("type"),
-                        monsterObject.getFloat("hp"),
-                        monsterObject.getFloat("speed"),
-                        monsterObject.getFloat("armour"),
-                        monsterObject.getFloat("mana_gained_on_kill")
-                    ));
-                } waves.add(new Wave(pre_wave_pause, duration, monsterTypes, this));
-            } activeMonsters = new ArrayList<>();
+                JSONArray monstersArray = waveData.getJSONArray("monsters");
+                for (int j = 0; j < monstersArray.size(); j++) {
+                    JSONObject monsterData = monstersArray.getJSONObject(j);
+                    String type = monsterData.getString("type");
+                    float hp = monsterData.getFloat("hp");
+                    float speed = monsterData.getFloat("speed");
+                    float armour = monsterData.getFloat("armour");
+                    float manaGainedOnKill = monsterData.getFloat("mana_gained_on_kill");
+            
+                    
+                    PImage sprite = loadImage("src/main/resources/WizardTD/" + type + ".png");
+                    MonsterType monsterType = new MonsterType(type, hp, speed, armour, manaGainedOnKill, sprite);
+                    
+                    wave.addMonsterType(monsterType, monsterData.getInt("quantity"));
+                }
+                
+                waves.add(wave);
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -182,9 +186,6 @@ public class App extends PApplet {
 
 
 
-
-
-
     private void determinePaths() {
         //PImage rotatedPathImg = null;
         PImage image = null;
@@ -252,7 +253,7 @@ public class App extends PApplet {
         }
     }
 
-    private List<int[]> findBoundaryPathTiles() {
+    public List<int[]> findBoundaryPathTiles() {
         List<int[]> boundaryTiles = new ArrayList<>();
     
         // Check top and bottom boundaries
@@ -279,14 +280,6 @@ public class App extends PApplet {
     }
 
 
-
-
-
-
-
-
-
-
     /**
      * Draw all elements in the game by current frame.
      */
@@ -302,11 +295,12 @@ public class App extends PApplet {
                 // Get a list of valid starting positions
                 List<int[]> validStartingPositions = findBoundaryPathTiles();
                 if (!validStartingPositions.isEmpty()) {
+                    System.out.println("SPAWN SHOULD BE OK");
                     // Choose a random starting position from the list
                     int randomIndex = (int) (Math.random() * validStartingPositions.size());
                     int[] startPosition = validStartingPositions.get(randomIndex);
                     
-                    activeMonsters.add(new Monster(monsterType, this, startPosition));
+                    activeMonsters.add(new Monster(monsterType, this));
                 }
                 
                 if (currentWave.isWaveComplete()) {

@@ -1,6 +1,8 @@
 package WizardTD;
 
 import java.util.Arrays;
+import java.util.List;
+import java.util.Random;
 
 import processing.core.PImage;
 
@@ -14,14 +16,20 @@ public class Monster {
     private int[][] DIRECTIONS = {{0, 1}, {1, 0}, {0, -1}, {-1, 0}};
     private int[] lastDirection = {0, 0};
 
-    public Monster(MonsterType monsterType, App app, int[] startPosition) {
+    public Monster(MonsterType monsterType, App app) {
         this.monsterType = monsterType;
         this.currentHp = monsterType.getHp();
         this.app = app;
-        this.position = startPosition;
-        this.currentPos = startPosition.clone();
+        this.position = getBoundaryStartPosition();
+        this.currentPos = position.clone();
         this.deathAnimationFrame = 0;
         this.lastDirection = new int[]{0, 0};
+    }
+
+    private int[] getBoundaryStartPosition() {
+        List<int[]> boundaryStartPositions = app.findBoundaryPathTiles();
+        Random rand = new Random();
+        return boundaryStartPositions.get(rand.nextInt(boundaryStartPositions.size()));
     }
 
     public int[] getPosition() {
@@ -49,7 +57,9 @@ public class Monster {
 
     public void draw() {
         PImage sprite = app.loadImage("src/main/resources/WizardTD/" + monsterType.getType() + ".png");
-        app.image(sprite, position[0], position[1]);
+        //app.image(sprite, position[0], position[1]);
+        app.image(sprite, 4, 5);
+        System.out.println("BRUHHHHHH");
         // Additional logic to draw HP bar and death animation
     }
 
