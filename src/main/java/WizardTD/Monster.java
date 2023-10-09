@@ -58,8 +58,7 @@ public class Monster {
     public void draw() {
         PImage sprite = app.loadImage("src/main/resources/WizardTD/" + monsterType.getType() + ".png");
         //app.image(sprite, position[0], position[1]);
-        app.image(sprite, 4, 5);
-        System.out.println("BRUHHHHHH");
+        //app.image(sprite, 4, 5);
         // Additional logic to draw HP bar and death animation
     }
 

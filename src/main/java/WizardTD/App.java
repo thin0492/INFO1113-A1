@@ -3,7 +3,7 @@ package WizardTD;
 import processing.core.PApplet;
 import processing.core.PImage;
 import processing.data.JSONArray;
-import processing.data.JSONArray;
+//import processing.data.JSONArray;
 import processing.data.JSONObject;
 import processing.event.MouseEvent;
 
@@ -16,8 +16,10 @@ import java.util.*;
 
 public class App extends PApplet {
 
-    private PImage[][] preprocessedPaths;
     char[][] layout;
+
+    //  Images of game elements
+    private PImage[][] preprocessedPaths;
     private PImage grassImg;
     private PImage shrubImg;
     private PImage wizardHouseImg;
@@ -25,7 +27,7 @@ public class App extends PApplet {
     private PImage path1Img;
     private PImage path2Img;
     private PImage path3Img;
-    private PImage tower0Img;
+    /*private PImage tower0Img;
     private PImage tower1Img;
     private PImage tower2Img;
     private PImage gremlinImg;
@@ -36,12 +38,13 @@ public class App extends PApplet {
     private PImage gremlin5Img;
     private PImage beetleImg;
     private PImage wormImg;
-    //private PImage rotatedPathImg;
+    private PImage rotatedPathImg;*/
 
     private List<Wave> waves = new ArrayList<>();
     private List<Monster> activeMonsters = new ArrayList<>();
     private int currentWaveIndex = 0;
 
+    //  Game window sizes
     public static final int CELLSIZE = 32;
     public static final int SIDEBAR = 120;
     public static final int TOPBAR = 40;
@@ -60,13 +63,13 @@ public class App extends PApplet {
         this.configPath = "config.json";
     }
 
-    //Initialise the setting of the window size.
+    //  Initialise the setting of the window size.
 	@Override
     public void settings() {
         size(WIDTH, HEIGHT);
     }
 
-    //Load all resources such as images. Initialise the elements such as the player, enemies and map elements.
+    //  Load all resources such as images. Initialise the elements such as the player, enemies and map elements.
 	@Override
     public void setup() {
         background(255);
@@ -79,8 +82,8 @@ public class App extends PApplet {
             JSONArray wavesArray = config.getJSONArray("waves");
             for (int i = 0; i < wavesArray.size(); i++) {
                 JSONObject waveData = wavesArray.getJSONObject(i);
-                Wave wave = new Wave(waveData.getFloat("pre_wave_pause"), waveData.getFloat("duration"), this);
-            
+                Wave wave = new Wave(waveData.getFloat("duration"), waveData.getFloat("pre_wave_pause"), this);
+                
                 
                 JSONArray monstersArray = waveData.getJSONArray("monsters");
                 for (int j = 0; j < monstersArray.size(); j++) {
@@ -103,17 +106,17 @@ public class App extends PApplet {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        // Load images during setup
+        //  Load images during setup
         grassImg = loadImage("src/main/resources/WizardTD/grass.png");
         shrubImg = loadImage("src/main/resources/WizardTD/shrub.png");
         wizardHouseImg = loadImage("src/main/resources/WizardTD/wizard_house.png");
-        tower0Img = loadImage("src/main/resources/WizardTD/tower0.png");
-        tower1Img = loadImage("src/main/resources/WizardTD/tower1.png");
-        tower2Img = loadImage("src/main/resources/WizardTD/tower2.png");
         path0Img = loadImage("src/main/resources/WizardTD/path0.png");
         path1Img = loadImage("src/main/resources/WizardTD/path1.png");
         path2Img = loadImage("src/main/resources/WizardTD/path2.png");
         path3Img = loadImage("src/main/resources/WizardTD/path3.png");
+        /*tower0Img = loadImage("src/main/resources/WizardTD/tower0.png");
+        tower1Img = loadImage("src/main/resources/WizardTD/tower1.png");
+        tower2Img = loadImage("src/main/resources/WizardTD/tower2.png");
         gremlinImg = loadImage("src/main/resources/WizardTD/gremlin.png");
         gremlin1Img = loadImage("src/main/resources/WizardTD/gremlin1.png");
         gremlin2Img = loadImage("src/main/resources/WizardTD/gremlin2.png");
@@ -121,7 +124,7 @@ public class App extends PApplet {
         gremlin4Img = loadImage("src/main/resources/WizardTD/gremlin4.png");
         gremlin5Img = loadImage("src/main/resources/WizardTD/gremlin5.png");
         beetleImg = loadImage("src/main/resources/WizardTD/beetle.png");
-        wormImg = loadImage("src/main/resources/WizardTD/worm.png");
+        wormImg = loadImage("src/main/resources/WizardTD/worm.png");*/
 
         
         preprocessedPaths = new PImage[layout.length][layout[0].length];
@@ -134,16 +137,16 @@ public class App extends PApplet {
         try {
             String[] lines = loadStrings(path);
             for (int i = 0; i < lines.length; i++) {
-                // If a line is shorter than 20 characters, pad it with spaces
+                //  If a line is shorter than 20 characters, pad it with spaces
                 while (lines[i].length() < BOARD_WIDTH) {
                     lines[i] += " ";
                 }
                 
-                // Take only the first 20 characters from the line
+                //  Take only the first 20 characters from the line
                 layout[i] = lines[i].substring(0, BOARD_WIDTH).toCharArray();
             }
             
-            // If there are less than 20 lines, fill the remaining rows with spaces
+            //  If there are less than 20 lines, fill the remaining rows with spaces
             for (int i = lines.length; i < BOARD_HEIGHT; i++) {
                 Arrays.fill(layout[i], ' ');
             }
@@ -153,17 +156,13 @@ public class App extends PApplet {
         return layout;
     }
 
-    /*
-     * Receive key pressed signal from the keyboard.
-     */
+    //  Receive key pressed signal from the keyboard.
 	@Override
     public void keyPressed(){
         
     }
 
-    /*
-     * Receive key released signal from the keyboard.
-     */
+    //  Receive key released signal from the keyboard.
 	@Override
     public void keyReleased(){
 
@@ -292,13 +291,13 @@ public class App extends PApplet {
             if (currentWave.shouldSpawnMonster()) {
                 MonsterType monsterType = currentWave.getRandomMonsterType();
                 
-                // Get a list of valid starting positions
+                //  Get a list of valid starting positions
                 List<int[]> validStartingPositions = findBoundaryPathTiles();
                 if (!validStartingPositions.isEmpty()) {
                     System.out.println("SPAWN SHOULD BE OK");
-                    // Choose a random starting position from the list
-                    int randomIndex = (int) (Math.random() * validStartingPositions.size());
-                    int[] startPosition = validStartingPositions.get(randomIndex);
+                    //  Choose a random starting position from the list
+                    //int randomIndex = (int) (Math.random() * validStartingPositions.size());
+                    //int[] startPosition = validStartingPositions.get(randomIndex);
                     
                     activeMonsters.add(new Monster(monsterType, this));
                 }

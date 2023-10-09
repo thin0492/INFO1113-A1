@@ -38,6 +38,7 @@ public class MonsterType {
     public float getManaGainedOnKill() {
         return mana_gained_on_kill;
     }
+    
     public PImage getSprite() {
         return sprite;
     }
