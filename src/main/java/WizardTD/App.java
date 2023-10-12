@@ -3,15 +3,12 @@ package WizardTD;
 import processing.core.PApplet;
 import processing.core.PImage;
 import processing.data.JSONArray;
-//import processing.data.JSONArray;
 import processing.data.JSONObject;
 import processing.event.MouseEvent;
 
 import java.awt.Graphics2D;
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
-
-//import java.io.*;
 import java.util.*;
 
 public class App extends PApplet {
@@ -20,93 +17,46 @@ public class App extends PApplet {
 
     //  Images of game elements
     private PImage[][] preprocessedPaths;
-    private PImage grassImg;
-    private PImage shrubImg;
-    private PImage wizardHouseImg;
-    private PImage path0Img;
-    private PImage path1Img;
-    private PImage path2Img;
-    private PImage path3Img;
-    /*private PImage tower0Img;
-    private PImage tower1Img;
-    private PImage tower2Img;
-    private PImage gremlinImg;
-    private PImage gremlin1Img;
-    private PImage gremlin2Img;
-    private PImage gremlin3Img;
-    private PImage gremlin4Img;
-    private PImage gremlin5Img;
-    private PImage beetleImg;
-    private PImage wormImg;
-    private PImage rotatedPathImg;*/
+    private PImage grassImg, shrubImg, wizardHouseImg, path0Img, path1Img, path2Img, path3Img;
 
+    //  Monsters && Waves handling
     private List<Wave> waves = new ArrayList<>();
     private List<Monster> activeMonsters = new ArrayList<>();
     private int currentWaveIndex = 0;
+    private int wizardHouseX, wizardHouseY;
 
-    //  Game window sizes
+    //  Board dimensions
     public static final int CELLSIZE = 32;
     public static final int SIDEBAR = 120;
     public static final int TOPBAR = 40;
     public static final int BOARD_WIDTH = 20;
     public static final int BOARD_HEIGHT = 20;
     public static final int FPS = 60;
-
-    public static int WIDTH = CELLSIZE*BOARD_WIDTH + SIDEBAR;
-    public static int HEIGHT = CELLSIZE*BOARD_HEIGHT + TOPBAR;
+    public static int WIDTH = CELLSIZE * BOARD_WIDTH + SIDEBAR;
+    public static int HEIGHT = CELLSIZE * BOARD_HEIGHT + TOPBAR;
 
     public String configPath;
     public Random random = new Random();
-    
+    public char[][] pathDirections = new char[BOARD_HEIGHT][BOARD_WIDTH];
 
     public App() {
         this.configPath = "config.json";
     }
 
-    //  Initialise the setting of the window size.
-	@Override
+    @Override
     public void settings() {
         size(WIDTH, HEIGHT);
     }
 
-    //  Load all resources such as images. Initialise the elements such as the player, enemies and map elements.
-	@Override
+    @Override
     public void setup() {
         background(255);
         frameRate(FPS);
-        try {
-            JSONObject config = loadJSONObject(configPath);
-            String layoutFilePath = config.getString("layout");
-            layout = readLayoutFile(layoutFilePath);
+        
+        // Load and setup game configuration
+        setupGameConfiguration();
 
-            JSONArray wavesArray = config.getJSONArray("waves");
-            for (int i = 0; i < wavesArray.size(); i++) {
-                JSONObject waveData = wavesArray.getJSONObject(i);
-                Wave wave = new Wave(waveData.getFloat("duration"), waveData.getFloat("pre_wave_pause"), this);
-                
-                
-                JSONArray monstersArray = waveData.getJSONArray("monsters");
-                for (int j = 0; j < monstersArray.size(); j++) {
-                    JSONObject monsterData = monstersArray.getJSONObject(j);
-                    String type = monsterData.getString("type");
-                    float hp = monsterData.getFloat("hp");
-                    float speed = monsterData.getFloat("speed");
-                    float armour = monsterData.getFloat("armour");
-                    float manaGainedOnKill = monsterData.getFloat("mana_gained_on_kill");
-            
-                    
-                    PImage sprite = loadImage("src/main/resources/WizardTD/" + type + ".png");
-                    MonsterType monsterType = new MonsterType(type, hp, speed, armour, manaGainedOnKill, sprite);
-                    
-                    wave.addMonsterType(monsterType, monsterData.getInt("quantity"));
-                }
-                
-                waves.add(wave);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        //  Load images during setup
+        // Load images
         grassImg = loadImage("src/main/resources/WizardTD/grass.png");
         shrubImg = loadImage("src/main/resources/WizardTD/shrub.png");
         wizardHouseImg = loadImage("src/main/resources/WizardTD/wizard_house.png");
@@ -114,22 +64,20 @@ public class App extends PApplet {
         path1Img = loadImage("src/main/resources/WizardTD/path1.png");
         path2Img = loadImage("src/main/resources/WizardTD/path2.png");
         path3Img = loadImage("src/main/resources/WizardTD/path3.png");
-        /*tower0Img = loadImage("src/main/resources/WizardTD/tower0.png");
-        tower1Img = loadImage("src/main/resources/WizardTD/tower1.png");
-        tower2Img = loadImage("src/main/resources/WizardTD/tower2.png");
-        gremlinImg = loadImage("src/main/resources/WizardTD/gremlin.png");
-        gremlin1Img = loadImage("src/main/resources/WizardTD/gremlin1.png");
-        gremlin2Img = loadImage("src/main/resources/WizardTD/gremlin2.png");
-        gremlin3Img = loadImage("src/main/resources/WizardTD/gremlin3.png");
-        gremlin4Img = loadImage("src/main/resources/WizardTD/gremlin4.png");
-        gremlin5Img = loadImage("src/main/resources/WizardTD/gremlin5.png");
-        beetleImg = loadImage("src/main/resources/WizardTD/beetle.png");
-        wormImg = loadImage("src/main/resources/WizardTD/worm.png");*/
 
-        
         preprocessedPaths = new PImage[layout.length][layout[0].length];
         determinePaths();
-    
+
+        for (int y = 0; y < BOARD_HEIGHT; y++) {
+            for (int x = 0; x < BOARD_WIDTH; x++) {
+                if (layout[y][x] == 'W') {
+                    wizardHouseX = x;
+                    wizardHouseY = y;
+                    break;
+                }
+            }
+        }
+        bfs(wizardHouseX, wizardHouseY);
     }
 
     public char[][] readLayoutFile(String path) {
@@ -154,6 +102,158 @@ public class App extends PApplet {
             e.printStackTrace();
         }
         return layout;
+    }
+
+
+    private void drawGameBoard() {
+        for (int y = 0; y < BOARD_HEIGHT; y++) {
+            for (int x = 0; x < BOARD_WIDTH; x++) {
+                switch (layout[y][x]) {
+                    case ' ':
+                        image(grassImg, x * CELLSIZE, y * CELLSIZE + TOPBAR, CELLSIZE, CELLSIZE);
+                        break;
+                    case 'X':
+                        PImage rotatedPathImg = preprocessedPaths[y][x];
+                        image(rotatedPathImg, x * CELLSIZE, y * CELLSIZE + TOPBAR, CELLSIZE, CELLSIZE);
+                        break;
+                    case 'S':
+                        image(shrubImg, x * CELLSIZE, y * CELLSIZE + TOPBAR, CELLSIZE, CELLSIZE);
+                        break;
+                    case 'W':
+                        image(shrubImg, x * CELLSIZE, y * CELLSIZE + TOPBAR, CELLSIZE, CELLSIZE);
+                        break;
+                }
+            }
+        }
+
+        // Drawing the wizard's house (drawing it separately to ensure it's on top of other tiles)
+        for (int y = 0; y < BOARD_HEIGHT; y++) {
+            for (int x = 0; x < BOARD_WIDTH; x++) {
+                if (layout[y][x] == 'W') {
+                    // Center the 48x48 image within the 32x32 tile
+                    int xOffset = (CELLSIZE - 48) / 2;
+                    int yOffset = (CELLSIZE - 48) / 2;
+                    image(wizardHouseImg, x * CELLSIZE + xOffset, y * CELLSIZE + TOPBAR + yOffset, 48, 48);
+                }
+            }
+        }
+    }
+
+
+    /*public void calculateDistancesToWizardHouse() {
+        distances = new int[BOARD_HEIGHT][BOARD_WIDTH];
+        for (int i = 0; i < BOARD_HEIGHT; i++) {
+            Arrays.fill(distances[i], Integer.MAX_VALUE);
+        }
+    
+        PriorityQueue<int[]> queue = new PriorityQueue<>((a, b) -> Integer.compare(distances[a[1]][a[0]], distances[b[1]][b[0]]));
+        distances[wizardHouseY][wizardHouseX] = 0;
+        queue.add(new int[]{wizardHouseX, wizardHouseY});
+    
+        int[][] directions = {{0, 1}, {1, 0}, {0, -1}, {-1, 0}}; // Right, Down, Left, Up
+    
+        while (!queue.isEmpty()) {
+            int[] current = queue.poll();
+    
+            for (int[] dir : directions) {
+                int newX = current[0] + dir[0];
+                int newY = current[1] + dir[1];
+    
+                if (newX >= 0 && newX < BOARD_WIDTH && newY >= 0 && newY < BOARD_HEIGHT && layout[newY][newX] == 'X' &&
+                    distances[newY][newX] > distances[current[1]][current[0]] + 1) {
+                    distances[newY][newX] = distances[current[1]][current[0]] + 1;
+                    queue.add(new int[]{newX, newY});
+                }
+            }
+        }
+    }*/
+
+    private void bfs(int wizardHouseX, int wizardHouseY) {
+        char[][] directions = new char[BOARD_HEIGHT][BOARD_WIDTH];
+        for (int i = 0; i < BOARD_HEIGHT; i++) {
+            Arrays.fill(directions[i], 'X');
+        }
+        directions[wizardHouseY][wizardHouseX] = 'W';
+    
+        Queue<int[]> queue = new LinkedList<>();
+        queue.add(new int[]{wizardHouseX, wizardHouseY});
+    
+        int[][] moves = {{0, -1}, {0, 1}, {-1, 0}, {1, 0}};
+        char[] moveDirections = {'U', 'D', 'L', 'R'};
+    
+        while (!queue.isEmpty()) {
+            int[] current = queue.poll();
+            int x = current[0];
+            int y = current[1];
+    
+            for (int i = 0; i < moves.length; i++) {
+                int newX = x + moves[i][0];
+                int newY = y + moves[i][1];
+    
+                if (newX >= 0 && newX < BOARD_WIDTH && newY >= 0 && newY < BOARD_HEIGHT && layout[newY][newX] == 'X' && directions[newY][newX] == 'X') {
+                    directions[newY][newX] = moveDirections[i];
+                    queue.add(new int[]{newX, newY});
+                }
+            }
+        }
+    
+        this.pathDirections = directions;
+    }
+    
+    
+    
+
+    private void updateAndDrawMonsters() {
+        Iterator<Monster> iterator = activeMonsters.iterator();
+        while (iterator.hasNext()) {
+            Monster monster = iterator.next();
+            monster.move();
+            monster.draw();
+
+            // Check if the monster has reached the wizard's house
+            int[] pos = monster.getPosition();
+            if (pos[0] >= 0 && pos[0] < BOARD_WIDTH && pos[1] >= 0 && pos[1] < BOARD_HEIGHT) {
+                if (layout[pos[1]][pos[0]] == 'W') {
+                    // End the game
+                    println("Game Over!");
+                    noLoop(); // Stop the draw loop
+                }
+            }
+        }
+    }
+
+
+    private void setupGameConfiguration() {
+        try {
+            JSONObject config = loadJSONObject(configPath);
+            String layoutFilePath = config.getString("layout");
+            layout = readLayoutFile(layoutFilePath);
+
+            JSONArray wavesArray = config.getJSONArray("waves");
+            for (int i = 0; i < wavesArray.size(); i++) {
+                JSONObject waveData = wavesArray.getJSONObject(i);
+                Wave wave = new Wave(waveData.getFloat("duration"), waveData.getFloat("pre_wave_pause"), this);
+
+                JSONArray monstersArray = waveData.getJSONArray("monsters");
+                for (int j = 0; j < monstersArray.size(); j++) {
+                    JSONObject monsterData = monstersArray.getJSONObject(j);
+                    String type = monsterData.getString("type");
+                    float hp = monsterData.getFloat("hp");
+                    float speed = monsterData.getFloat("speed");
+                    float armour = monsterData.getFloat("armour");
+                    float manaGainedOnKill = monsterData.getFloat("mana_gained_on_kill");
+
+                    PImage sprite = loadImage("src/main/resources/WizardTD/" + type + ".png");
+                    MonsterType monsterType = new MonsterType(type, hp, speed, armour, manaGainedOnKill, sprite);
+
+                    wave.addMonsterType(monsterType, monsterData.getInt("quantity"));
+                }
+
+                waves.add(wave);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     //  Receive key pressed signal from the keyboard.
@@ -186,7 +286,6 @@ public class App extends PApplet {
 
 
     private void determinePaths() {
-        //PImage rotatedPathImg = null;
         PImage image = null;
         float angle = 0;
         for (int i = 0; i < layout.length; i++) {
@@ -197,9 +296,6 @@ public class App extends PApplet {
                     if (i < layout.length-1 && layout[i+1][j] == 'X') directions.add("below");
                     if (j > 0 && layout[i][j-1] == 'X') directions.add("left");
                     if (j < layout[i].length-1 && layout[i][j+1] == 'X') directions.add("right");
-                    //System.out.println(directions);
-                    //PImage image = null;
-                    //float angle = 0;
                     if (directions.size() == 1) {
                         image = path0Img;
                         if (directions.contains("right") || directions.contains("left")) {
@@ -284,77 +380,24 @@ public class App extends PApplet {
      */
 	@Override
     public void draw() {
+        
         if (currentWaveIndex < waves.size()) {
             Wave currentWave = waves.get(currentWaveIndex);
             currentWave.update(1.0f / FPS);
-            
+
             if (currentWave.shouldSpawnMonster()) {
-                MonsterType monsterType = currentWave.getRandomMonsterType();
-                
-                //  Get a list of valid starting positions
-                List<int[]> validStartingPositions = findBoundaryPathTiles();
-                if (!validStartingPositions.isEmpty()) {
-                    System.out.println("SPAWN SHOULD BE OK");
-                    //  Choose a random starting position from the list
-                    //int randomIndex = (int) (Math.random() * validStartingPositions.size());
-                    //int[] startPosition = validStartingPositions.get(randomIndex);
-                    
-                    activeMonsters.add(new Monster(monsterType, this));
-                }
-                
-                if (currentWave.isWaveComplete()) {
-                    currentWaveIndex++; // Move to the next wave
-                }
-            }
-        }
-        
-        // Draw the board based on layout
-        for (int y = 0; y < BOARD_HEIGHT; y++) {
-            for (int x = 0; x < BOARD_WIDTH; x++) {
-                switch (layout[y][x]) {
-                    case ' ':
-                        image(grassImg, x * CELLSIZE, y * CELLSIZE + TOPBAR, CELLSIZE, CELLSIZE);
-                        break;
-                    case 'X':
-                        PImage rotatedPathImg = preprocessedPaths[y][x];
-                        image(rotatedPathImg, x * CELLSIZE, y * CELLSIZE + TOPBAR, CELLSIZE, CELLSIZE);
-                        break;
-                    case 'S':
-                        image(shrubImg, x * CELLSIZE, y * CELLSIZE + TOPBAR, CELLSIZE, CELLSIZE);
-                        break;
-                    case 'W':
-                        image(shrubImg, x * CELLSIZE, y * CELLSIZE + TOPBAR, CELLSIZE, CELLSIZE);
-                        break;
+                Monster monster = currentWave.spawnMonster(this, wizardHouseX, wizardHouseY);
+                if (monster != null) {
+                    activeMonsters.add(monster);
                 }
             }
         }
 
-        // Drawing the wizard's house (drawing it separately to ensure it's on top of other tiles)
-        for (int y = 0; y < BOARD_HEIGHT; y++) {
-            for (int x = 0; x < BOARD_WIDTH; x++) {
-                if (layout[y][x] == 'W') {
-                    // Center the 48x48 image within the 32x32 tile
-                    int xOffset = (CELLSIZE - 48) / 2;
-                    int yOffset = (CELLSIZE - 48) / 2;
-                    image(wizardHouseImg, x * CELLSIZE + xOffset, y * CELLSIZE + TOPBAR + yOffset, 48, 48);
-                }
-            }
-        }
+        // Draw the game board
+        drawGameBoard();
 
         // Move and draw monsters
-        Iterator<Monster> iterator = activeMonsters.iterator();
-        while (iterator.hasNext()) {
-            Monster monster = iterator.next();
-            monster.move();
-            monster.draw();
-
-            // Check if the monster has reached the wizard's house
-            if (layout[monster.getPosition()[1]][monster.getPosition()[0]] == 'W') {
-                // End the game
-                println("Game Over!");
-                noLoop(); // Stop the draw loop
-            }
-        }
+        updateAndDrawMonsters();
 
         // Drawing the brown topbar
         fill(150, 108, 51);
