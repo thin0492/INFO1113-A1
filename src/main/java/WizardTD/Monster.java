@@ -1,7 +1,5 @@
 package WizardTD;
 
-import processing.core.PApplet;
-
 public class Monster {
     private float x, y;  // current position
     private int currentTileX, currentTileY;
@@ -22,8 +20,26 @@ public class Monster {
     }
 
     public void draw() {
-        app.image(type.getSprite(), x * App.CELLSIZE, y * App.CELLSIZE + App.TOPBAR, App.CELLSIZE, App.CELLSIZE);
+        float adjustedSize = 0.8f * App.CELLSIZE;
+        float offsetX = (App.CELLSIZE - adjustedSize) / 2;
+        float offsetY = (App.CELLSIZE - adjustedSize) / 2;
+    
+        // Draw the monster sprite
+        app.image(type.getSprite(), x * App.CELLSIZE + offsetX, y * App.CELLSIZE + App.TOPBAR + offsetY, adjustedSize, adjustedSize);
+    
+        // Draw the health bar
+        float healthBarWidth = adjustedSize;  // Health bar width equal to the width of the monster
+        float healthBarHeight = 4;  // Arbitrary height for the health bar
+        float healthBarX = x * App.CELLSIZE + offsetX;
+        float healthBarY = y * App.CELLSIZE + App.TOPBAR + offsetY - healthBarHeight - 2;  // Above the monster, with a small gap
+        float currentHealthPercentage = type.getHp() / type.getHp();  // Assuming you have a getMaxHp() method in MonsterType class
+    
+        app.fill(255, 0, 0);  // Red color for background of health bar
+        app.rect(healthBarX, healthBarY, healthBarWidth, healthBarHeight);
+        app.fill(0, 255, 0);  // Green color for current health
+        app.rect(healthBarX, healthBarY, healthBarWidth * currentHealthPercentage, healthBarHeight);
     }
+    
 
     public void move() {
         for (int i = 0; i < type.getSpeed(); i++) {

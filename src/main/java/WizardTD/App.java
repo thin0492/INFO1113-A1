@@ -11,19 +11,25 @@ import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import java.util.*;
 
+//import WizardTD.Buttons;
+//import WizardTD.Tower;
+
 public class App extends PApplet {
 
     char[][] layout;
 
     //  Images of game elements
     private PImage[][] preprocessedPaths;
-    private PImage grassImg, shrubImg, wizardHouseImg, path0Img, path1Img, path2Img, path3Img;
+    private PImage grassImg, shrub0Img, shrub1Img, shrub2Img, shrub3Img, shrub4Img, wizardHouseImg, path0Img, path1Img, path2Img, path3Img, tower0Img;
+    private int[][] shrubTypes = new int[BOARD_HEIGHT][BOARD_WIDTH];
 
-    //  Monsters && Waves handling
+
+    //  Monsters & Waves handling
     private List<Wave> waves = new ArrayList<>();
     private List<Monster> activeMonsters = new ArrayList<>();
     private int currentWaveIndex = 0;
     private int wizardHouseX, wizardHouseY;
+
 
     //  Board dimensions
     public static final int CELLSIZE = 32;
@@ -35,9 +41,25 @@ public class App extends PApplet {
     public static int WIDTH = CELLSIZE * BOARD_WIDTH + SIDEBAR;
     public static int HEIGHT = CELLSIZE * BOARD_HEIGHT + TOPBAR;
 
+
     public String configPath;
     public Random random = new Random();
     public char[][] pathDirections = new char[BOARD_HEIGHT][BOARD_WIDTH];
+    private Buttons fastForwardButton, pauseButton, buildTowerButton, upgradeRangeButton, upgradeSpeedButton, upgradeDamageButton;
+    private boolean gamePaused = false;
+    private float gameSpeed = 1.0f;
+    ArrayList<Tower> towers = new ArrayList<>();
+    boolean placingTower = false;
+    float initialTowerRange;
+    float initialTowerFiringSpeed;
+    float initialTowerDamage;
+    private boolean isBuildingTower = false;
+    private float towerCost;
+    private float currentMana;
+    private float manaCap;
+    private float manaRegenRate;
+
+
 
     public App() {
         this.configPath = "config.json";
@@ -56,17 +78,45 @@ public class App extends PApplet {
         // Load and setup game configuration
         setupGameConfiguration();
 
+        int buttonSize = 50; // Size of the square button
+        int buttonSpacing = 10; // Spacing between buttons
+        int startX = CELLSIZE * BOARD_WIDTH + (SIDEBAR - buttonSize) / 2 - 20; // Moving buttons slightly to the left
+        int startY = TOPBAR + buttonSpacing;
+
+        fastForwardButton = new Buttons(startX, startY, buttonSize, "Fast Forward", "FF");
+        pauseButton = new Buttons(startX, startY + (buttonSize + buttonSpacing), buttonSize, "Pause", "P");
+        buildTowerButton = new Buttons(startX, startY + 2 * (buttonSize + buttonSpacing), buttonSize, "Build Tower", "T");
+        upgradeRangeButton = new Buttons(startX, startY + 3 * (buttonSize + buttonSpacing), buttonSize, "Upgrade Range", "U1");
+        upgradeSpeedButton = new Buttons(startX, startY + 4 * (buttonSize + buttonSpacing), buttonSize, "Upgrade Speed", "U2");
+        upgradeDamageButton = new Buttons(startX, startY + 5 * (buttonSize + buttonSpacing), buttonSize, "Upgrade Damage", "U3");
+
         // Load images
         grassImg = loadImage("src/main/resources/WizardTD/grass.png");
-        shrubImg = loadImage("src/main/resources/WizardTD/shrub.png");
+        shrub0Img = loadImage("src/main/resources/WizardTD/shrub0.png");
+        shrub1Img = loadImage("src/main/resources/WizardTD/shrub1.png");
+        shrub2Img = loadImage("src/main/resources/WizardTD/shrub2.png");
+        shrub3Img = loadImage("src/main/resources/WizardTD/shrub3.png");
+        shrub4Img = loadImage("src/main/resources/WizardTD/shrub4.png");
         wizardHouseImg = loadImage("src/main/resources/WizardTD/wizard_house.png");
         path0Img = loadImage("src/main/resources/WizardTD/path0.png");
         path1Img = loadImage("src/main/resources/WizardTD/path1.png");
         path2Img = loadImage("src/main/resources/WizardTD/path2.png");
         path3Img = loadImage("src/main/resources/WizardTD/path3.png");
+        tower0Img = loadImage("src/main/resources/WizardTD/tower0.png");
 
         preprocessedPaths = new PImage[layout.length][layout[0].length];
         determinePaths();
+
+        for (int y = 0; y < BOARD_HEIGHT; y++) {
+            for (int x = 0; x < BOARD_WIDTH; x++) {
+                if (layout[y][x] == 'S') {
+                    shrubTypes[y][x] = (int) random(0, 5);
+                } else {
+                    shrubTypes[y][x] = -1; // -1 indicates no shrub
+                }
+            }
+        }
+        
 
         for (int y = 0; y < BOARD_HEIGHT; y++) {
             for (int x = 0; x < BOARD_WIDTH; x++) {
@@ -117,10 +167,10 @@ public class App extends PApplet {
                         image(rotatedPathImg, x * CELLSIZE, y * CELLSIZE + TOPBAR, CELLSIZE, CELLSIZE);
                         break;
                     case 'S':
-                        image(shrubImg, x * CELLSIZE, y * CELLSIZE + TOPBAR, CELLSIZE, CELLSIZE);
+                        image(grassImg, x * CELLSIZE, y * CELLSIZE + TOPBAR, CELLSIZE, CELLSIZE);
                         break;
                     case 'W':
-                        image(shrubImg, x * CELLSIZE, y * CELLSIZE + TOPBAR, CELLSIZE, CELLSIZE);
+                        image(grassImg, x * CELLSIZE, y * CELLSIZE + TOPBAR, CELLSIZE, CELLSIZE);
                         break;
                 }
             }
@@ -129,7 +179,27 @@ public class App extends PApplet {
         // Drawing the wizard's house (drawing it separately to ensure it's on top of other tiles)
         for (int y = 0; y < BOARD_HEIGHT; y++) {
             for (int x = 0; x < BOARD_WIDTH; x++) {
-                if (layout[y][x] == 'W') {
+                if (layout[y][x] == 'S') {
+                    switch (shrubTypes[y][x]) {
+                        case 0:
+                            image(shrub0Img, x * CELLSIZE, y * CELLSIZE + TOPBAR, CELLSIZE, CELLSIZE);
+                            break;
+                        case 1:
+                            image(shrub1Img, x * CELLSIZE, y * CELLSIZE + TOPBAR, CELLSIZE, CELLSIZE);
+                            break;
+                        case 2:
+                            image(shrub2Img, x * CELLSIZE, y * CELLSIZE + TOPBAR, CELLSIZE, CELLSIZE);
+                            break;
+                        case 3:
+                            image(shrub3Img, x * CELLSIZE, y * CELLSIZE + TOPBAR, CELLSIZE, CELLSIZE);
+                            break;
+                        case 4:
+                            image(shrub4Img, x * CELLSIZE, y * CELLSIZE + TOPBAR, CELLSIZE, CELLSIZE);
+                            break;
+                    }
+                }
+                
+                else if (layout[y][x] == 'W') {
                     // Center the 48x48 image within the 32x32 tile
                     int xOffset = (CELLSIZE - 48) / 2;
                     int yOffset = (CELLSIZE - 48) / 2;
@@ -139,34 +209,6 @@ public class App extends PApplet {
         }
     }
 
-
-    /*public void calculateDistancesToWizardHouse() {
-        distances = new int[BOARD_HEIGHT][BOARD_WIDTH];
-        for (int i = 0; i < BOARD_HEIGHT; i++) {
-            Arrays.fill(distances[i], Integer.MAX_VALUE);
-        }
-    
-        PriorityQueue<int[]> queue = new PriorityQueue<>((a, b) -> Integer.compare(distances[a[1]][a[0]], distances[b[1]][b[0]]));
-        distances[wizardHouseY][wizardHouseX] = 0;
-        queue.add(new int[]{wizardHouseX, wizardHouseY});
-    
-        int[][] directions = {{0, 1}, {1, 0}, {0, -1}, {-1, 0}}; // Right, Down, Left, Up
-    
-        while (!queue.isEmpty()) {
-            int[] current = queue.poll();
-    
-            for (int[] dir : directions) {
-                int newX = current[0] + dir[0];
-                int newY = current[1] + dir[1];
-    
-                if (newX >= 0 && newX < BOARD_WIDTH && newY >= 0 && newY < BOARD_HEIGHT && layout[newY][newX] == 'X' &&
-                    distances[newY][newX] > distances[current[1]][current[0]] + 1) {
-                    distances[newY][newX] = distances[current[1]][current[0]] + 1;
-                    queue.add(new int[]{newX, newY});
-                }
-            }
-        }
-    }*/
 
     private void bfs(int wizardHouseX, int wizardHouseY) {
         char[][] directions = new char[BOARD_HEIGHT][BOARD_WIDTH];
@@ -229,6 +271,15 @@ public class App extends PApplet {
             String layoutFilePath = config.getString("layout");
             layout = readLayoutFile(layoutFilePath);
 
+            initialTowerRange = config.getFloat("initial_tower_range");
+            initialTowerFiringSpeed = config.getFloat("initial_tower_firing_speed");
+            initialTowerDamage = config.getFloat("initial_tower_damage");
+            towerCost = config.getFloat("tower_cost");
+            currentMana = config.getFloat("initial_mana");
+            manaCap = config.getFloat("initial_mana_cap");
+            manaRegenRate = config.getFloat("initial_mana_gained_per_second");
+
+
             JSONArray wavesArray = config.getJSONArray("waves");
             for (int i = 0; i < wavesArray.size(); i++) {
                 JSONObject waveData = wavesArray.getJSONObject(i);
@@ -259,7 +310,9 @@ public class App extends PApplet {
     //  Receive key pressed signal from the keyboard.
 	@Override
     public void keyPressed(){
-        
+        if (key == 't' || key == 'T') {
+            placingTower = true;
+        }
     }
 
     //  Receive key released signal from the keyboard.
@@ -270,12 +323,34 @@ public class App extends PApplet {
 
     @Override
     public void mousePressed(MouseEvent e) {
-        
+        if (fastForwardButton.isClicked(mouseX, mouseY)) {
+            // Handle fast forward button click
+        } else if (pauseButton.isClicked(mouseX, mouseY)) {
+            // Handle pause button click
+        } else if (buildTowerButton.isClicked(mouseX, mouseY)) {
+            // Handle build tower button click
+            activateBuildTowerMode();
+        } 
     }
 
     @Override
     public void mouseReleased(MouseEvent e) {
+        if (buildTowerButton.isClicked(mouseX, mouseY)) {
+            isBuildingTower = true; // Set the tower-building mode
+            return;
+        }
 
+        if (placingTower && currentMana >= towerCost) {
+            int gridX = mouseX / CELLSIZE;
+            int gridY = (mouseY - TOPBAR) / CELLSIZE;
+            
+            if (layout[gridY][gridX] == ' ') { // Empty grass tile
+                towers.add(new Tower(gridX, gridY, initialTowerRange, initialTowerFiringSpeed, initialTowerDamage, tower0Img));
+
+                placingTower = false;
+                currentMana -= towerCost;
+            }
+        }
     }
 
     /*@Override
@@ -283,6 +358,9 @@ public class App extends PApplet {
 
     }*/
 
+    private void activateBuildTowerMode() {
+        placingTower = true;
+    }
 
 
     private void determinePaths() {
@@ -380,7 +458,9 @@ public class App extends PApplet {
      */
 	@Override
     public void draw() {
-        
+        currentMana = min(currentMana + manaRegenRate / FPS, manaCap);
+
+
         if (currentWaveIndex < waves.size()) {
             Wave currentWave = waves.get(currentWaveIndex);
             currentWave.update(1.0f / FPS);
@@ -405,7 +485,65 @@ public class App extends PApplet {
 
         // Drawing the brown sidebar on the right
         fill(150, 108, 51);
-        rect(CELLSIZE * BOARD_WIDTH, 0, SIDEBAR, HEIGHT);
+        rect(CELLSIZE * BOARD_WIDTH, TOPBAR, SIDEBAR, HEIGHT - TOPBAR);
+
+        fastForwardButton.display(this);
+        pauseButton.display(this);
+        buildTowerButton.display(this);
+        upgradeRangeButton.display(this);
+        upgradeSpeedButton.display(this);
+        upgradeDamageButton.display(this);
+
+        /*int manaBarWidth = 300;  // Width of the mana bar
+        int manaBarHeight = 20;  // Height of the mana bar
+        int manaBarX = WIDTH - manaBarWidth - 10;  // 10 pixels from the right edge
+        int manaBarY = (TOPBAR - manaBarHeight) / 2;  // Vertically centered in the top bar
+
+        // Draw background (unfilled) mana bar
+        fill(255);  // White color for the background
+        rect(manaBarX, manaBarY, manaBarWidth, manaBarHeight);
+
+        // Draw filled mana bar based on current mana
+        float filledWidth = map(currentMana, 0, manaCap, 0, manaBarWidth);
+        fill(7, 222, 250);  // Blue color for filled portion
+        rect(manaBarX, manaBarY, filledWidth, manaBarHeight);*/
+
+        drawManaBar();
+        for (Tower tower : towers) {
+            tower.display(this);
+        }
+
+    }
+
+    private void drawManaBar() {
+        int barWidth = 300;  // Making the bar 1.5 times wider
+        int barHeight = 20;
+        int startX = WIDTH - barWidth - 10;
+        int startY = (TOPBAR - barHeight) / 2;
+
+        // Calculate mana fill
+    int fillWidth = (int) (barWidth * (currentMana / manaCap));
+
+    fill(7, 222, 250);  // Blue for the filled portion
+    rect(startX, startY, fillWidth, barHeight);
+
+    fill(255);  // White for the unfilled portion
+    rect(startX + fillWidth, startY, barWidth - fillWidth, barHeight);
+
+    stroke(0);  // Black border for the mana bar
+    noFill();
+    rect(startX, startY, barWidth, barHeight);
+
+    // Displaying the word "MANA:" to the left of the mana bar
+    fill(0);  // Black text color
+    textSize(18);
+    textAlign(RIGHT, CENTER);
+    text("MANA:", startX - 10, startY + barHeight / 2);
+
+    // Displaying the current mana and the max mana within the mana bar
+    String manaText = String.format("%.0f / %.0f", currentMana, manaCap);
+    textAlign(CENTER, CENTER);
+    text(manaText, startX + barWidth / 2, startY + barHeight / 2);
     }
 
     
