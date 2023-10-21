@@ -2,6 +2,7 @@ package WizardTD;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Iterator;
 
 import processing.core.PApplet;
 import processing.core.PImage;
@@ -18,6 +19,8 @@ public class Tower {
     boolean isBeingPlaced = false;
     List<Fireball> fireballs = new ArrayList<>();
     private float timeSinceLastFire = 0;
+    public float fireCooldown = 0;
+    public Fireball currentFireball = null;
 
     public Tower(int x, int y, float initialRange, float initialFiringSpeed, float initialDamage, PImage tower0Img) {
         this.x = x;
@@ -36,7 +39,7 @@ public class Tower {
     }
     
 
-    public void update(List<Monster> monsters, PApplet p) {
+    /*public void update(List<Monster> monsters, PApplet p) {
         timeSinceLastFire += 1.0 / p.frameRate;
         if (timeSinceLastFire >= 1.0 / firingSpeed) {
             for (Monster monster : monsters) {
@@ -48,12 +51,27 @@ public class Tower {
                 }
             }
         }
-    }
+
+        // Move the fireballs and check for impacts
+        Iterator<Fireball> fireballIterator = fireballs.iterator();
+        while (fireballIterator.hasNext()) {
+            Fireball fireball = fireballIterator.next();
+            boolean monsterDied = fireball.move();
+            if (fireball.hasReachedTarget()) {
+                fireballIterator.remove();  // Remove the fireball once it reaches its target
+                if (monsterDied) {
+                    // Remove the monster from the game (you might need further logic if you want to handle game state changes, rewards, etc.)
+                    monsters.remove(fireball.targetMonster);
+                }
+            }
+        }
+    }*/
 
 
-    public void fire(Monster monster, PApplet p) {
+    public Fireball fire(Monster monster, PApplet p) {
         Fireball fireball = new Fireball(x * App.CELLSIZE + App.CELLSIZE/2, y * App.CELLSIZE + App.CELLSIZE/2 + App.TOPBAR, monster, damage, p);
-        fireballs.add(fireball);
+        //fireballs.add(fireball);
+        return fireball;
     }
 
 

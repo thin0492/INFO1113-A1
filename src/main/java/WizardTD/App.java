@@ -117,9 +117,9 @@ public class App extends PApplet {
             for (int x = 0; x < BOARD_WIDTH; x++) {
                 if (layout[y][x] == 'S') {
                     shrubTypes[y][x] = (int) random(0, 5);
-                } else {
+                } /*else {
                     shrubTypes[y][x] = -1; // -1 indicates no shrub
-                }
+                }*/
             }
         }
         
@@ -488,12 +488,11 @@ public class App extends PApplet {
 	@Override
     public void draw() {
         currentMana = min(currentMana + manaRegenRate / FPS, manaCap);
-
-
+    
         if (currentWaveIndex < waves.size()) {
             Wave currentWave = waves.get(currentWaveIndex);
             currentWave.update(1.0f / FPS);
-
+    
             if (currentWave.shouldSpawnMonster()) {
                 Monster monster = currentWave.spawnMonster(this, wizardHouseX, wizardHouseY);
                 if (monster != null) {
@@ -501,60 +500,75 @@ public class App extends PApplet {
                 }
             }
         }
-
+    
         // Draw the game board
         drawGameBoard();
-
-        // Draw towers
-        /*for (Tower tower : towers) {
-                    tower.display(this);
-        }*/
+    
+        // Draw towers and handle tower firing logic
         for (Tower tower : towers) {
+            tower.display(this);
+            Monster targetMonster = null;
+            float closestDistance = Float.MAX_VALUE;
+        
+            // Reduce the cooldown for the tower on every frame
+            tower.fireCooldown -= 1.0f / FPS;
+        
+            // Find the closest monster within the tower's range
             for (Monster monster : activeMonsters) {
-                if (dist(tower.x * CELLSIZE + CELLSIZE/2, tower.y * CELLSIZE + CELLSIZE/2 + TOPBAR, monster.getExactX(), monster.getExactY()) <= tower.range) {
-                    if (random(1) < tower.firingSpeed / FPS) {  // Random chance to fire based on firing speed
-                        tower.fire(monster, this);
-                    }
+                float distance = dist(tower.x * CELLSIZE + CELLSIZE / 2, tower.y * CELLSIZE + CELLSIZE / 2 + TOPBAR, monster.getExactX(), monster.getExactY());
+                if (distance <= tower.range && distance < closestDistance) {
+                    targetMonster = monster;
+                    closestDistance = distance;
                 }
             }
-            // Draw and move fireballs for each tower
+        
+            // If the tower's cooldown is up and there's a target, fire at the monster and reset cooldown
+            if (targetMonster != null && tower.fireCooldown <= 0) {
+                //tower.fire(targetMonster, this);
+                tower.currentFireball = tower.fire(targetMonster, this);  // Assign the fired fireball to currentFireball
+                tower.fireCooldown = 1.0f / tower.firingSpeed;  // Reset the cooldown based on firing speed
+            }
+            
+            if (tower.currentFireball != null) {
+                tower.currentFireball.move();
+                if (tower.currentFireball.hasReachedTarget()) {
+                    // Deal damage to the target monster
+                    Monster hitMonster = targetMonster;
+                    float monsterHp = hitMonster.getCurrentHp();
+                    monsterHp -= tower.currentFireball.damage;
+                    if (monsterHp <= 0) {
+                        activeMonsters.remove(hitMonster);
+                    }
+                    tower.currentFireball = null;  // Reset the fireball after it has reached its target
+                } else {
+                    tower.currentFireball.display(this);
+                }
+            }
+            /* Handle fireball movement and collision
             Iterator<Fireball> fireballIterator = tower.fireballs.iterator();
             while (fireballIterator.hasNext()) {
                 Fireball fireball = fireballIterator.next();
                 fireball.move();
                 if (fireball.hasReachedTarget()) {
-                    // Deal damage to monster and remove the fireball
-                    Monster hitMonster = null;
-                    for (Monster monster : activeMonsters) {
-                        if (dist(fireball.x, fireball.y, monster.getExactX(), monster.getExactY()) <= 5) {  // Example size for monster radius
-                            float type.getHp() -= fireball.damage;
-                            if (monster.hp <= 0) {
-                                hitMonster = monster;  // Monster to be removed
-                                break;
-                            }
-                        }
-                    }
-                    if (hitMonster != null) {
-                        activeMonsters.remove(hitMonster);
+                    fireball.targetMonster.takeDamage(fireball.damage);
+                    if (fireball.targetMonster.getCurrentHp() <= 0) {
+                        activeMonsters.remove(fireball.targetMonster);
                     }
                     fireballIterator.remove();
                 } else {
                     fireball.display(this);
                 }
-            }
+            }*/
         }
-                
+    
         // Move and draw monsters
         updateAndDrawMonsters();
-
-        // Drawing the brown topbar
+    
+        // Drawing the UI components
         fill(150, 108, 51);
         rect(0, 0, WIDTH, TOPBAR);
-
-        // Drawing the brown sidebar on the right
-        fill(150, 108, 51);
         rect(CELLSIZE * BOARD_WIDTH, TOPBAR, SIDEBAR, HEIGHT - TOPBAR);
-
+    
         fastForwardButton.display(this);
         pauseButton.display(this);
         buildTowerButton.display(this);
@@ -562,24 +576,7 @@ public class App extends PApplet {
         upgradeSpeedButton.display(this);
         upgradeDamageButton.display(this);
         manaPoolSpellButton.display(this);
-
-        /*int manaBarWidth = 300;  // Width of the mana bar
-        int manaBarHeight = 20;  // Height of the mana bar
-        int manaBarX = WIDTH - manaBarWidth - 10;  // 10 pixels from the right edge
-        int manaBarY = (TOPBAR - manaBarHeight) / 2;  // Vertically centered in the top bar
-
-        // Draw background (unfilled) mana bar
-        fill(255);  // White color for the background
-        rect(manaBarX, manaBarY, manaBarWidth, manaBarHeight);
-
-        // Draw filled mana bar based on current mana
-        float filledWidth = map(currentMana, 0, manaCap, 0, manaBarWidth);
-        fill(7, 222, 250);  // Blue color for filled portion
-        rect(manaBarX, manaBarY, filledWidth, manaBarHeight);*/
-
         drawManaBar();
-        
-
     }
 
 

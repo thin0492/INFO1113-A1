@@ -18,7 +18,7 @@ public class Fireball {
         this.img = p.loadImage("src/main/resources/WizardTD/fireball.png");
     }
 
-    public void move() {
+    public boolean move() {
         float targetX = targetMonster.getExactX();
         float targetY = targetMonster.getExactY();
         float dx = targetX - x;
@@ -26,7 +26,8 @@ public class Fireball {
         float distance = PApplet.dist(x, y, targetX, targetY);
         
         if (hasReachedTarget()) {
-            targetMonster.takeDamage(damage);
+            boolean monsterDied = targetMonster.takeDamage(damage);
+            return monsterDied;
             // You might also want to remove this fireball from the list in the Tower class
         } else {
             // Normalize
@@ -37,6 +38,7 @@ public class Fireball {
             x += nx * speed;
             y += ny * speed;
         }
+        return false;
     }
 
     public boolean hasReachedTarget() {

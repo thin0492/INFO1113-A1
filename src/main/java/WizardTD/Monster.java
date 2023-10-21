@@ -24,18 +24,18 @@ public class Monster {
     }
 
     public void draw() {
-        float adjustedSize = 0.8f * App.CELLSIZE;
-        float offsetX = (App.CELLSIZE - adjustedSize) / 2;
-        float offsetY = (App.CELLSIZE - adjustedSize) / 2;
+        float adjustedSize = 1f * 32;
+        float xOffset = (App.CELLSIZE - adjustedSize) / 2;
+        float yOffset = (App.CELLSIZE - adjustedSize) / 2;
     
         // Draw the monster sprite
-        app.image(type.getSprite(), x * App.CELLSIZE + offsetX, y * App.CELLSIZE + App.TOPBAR + offsetY, adjustedSize, adjustedSize);
+        app.image(type.getSprite(), x * App.CELLSIZE + xOffset, y * App.CELLSIZE + App.TOPBAR + yOffset, adjustedSize, adjustedSize);
     
         // Draw the health bar
         float healthBarWidth = adjustedSize;  // Health bar width equal to the width of the monster
         float healthBarHeight = 4;  // Arbitrary height for the health bar
-        float healthBarX = x * App.CELLSIZE + offsetX;
-        float healthBarY = y * App.CELLSIZE + App.TOPBAR + offsetY - healthBarHeight - 2;  // Above the monster, with a small gap
+        float healthBarX = x * App.CELLSIZE + xOffset;
+        float healthBarY = y * App.CELLSIZE + App.TOPBAR + yOffset - healthBarHeight - 2;  // Above the monster, with a small gap
         float currentHealthPercentage = currentHp / initialHp;
     
         app.fill(255, 0, 0);  // Red color for background of health bar
@@ -45,20 +45,19 @@ public class Monster {
     }
 
     public void move() {
-        for (int i = 0; i < type.getSpeed(); i++) {
-            char direction = app.pathDirections[Math.round(y)][Math.round(x)];
+        float moveAmount = type.getSpeed();  // This will be in pixels per frame
 
-            switch(direction) {
-                case 'U': y += 1; break;
-                case 'D': y -= 1; break;
-                case 'L': x += 1; break;
-                case 'R': x -= 1; break;
-            }
-
-            // Update the monster's current tile after each pixel movement
-            currentTileX = Math.round(x);
-            currentTileY = Math.round(y);
+        char direction = app.pathDirections[Math.round(y)][Math.round(x)];
+        switch(direction) {
+            case 'U': y += moveAmount / 60; break;
+            case 'D': y -= moveAmount / 60; break;
+            case 'L': x += moveAmount / 60; break;
+            case 'R': x -= moveAmount / 60; break;
         }
+
+        // Update the monster's current tile after each pixel movement
+        currentTileX = Math.round(x);
+        currentTileY = Math.round(y);
     }
 
     public int[] getPosition() {
@@ -77,12 +76,17 @@ public class Monster {
         return type;
     }
 
+    public float getCurrentHp() {
+        return currentHp;
+    }
+
     // Method to take damage from fireballs
-    public void takeDamage(float damage) {
+    public boolean takeDamage(float damage) {
         this.currentHp -= damage;
         if (this.currentHp < 0) {
             this.currentHp = 0;  // Ensure health doesn't go below 0
+            return true;
         }
+        return false;
     }
 }
-
