@@ -6,6 +6,8 @@ public class Monster {
     private MonsterType type;
     private App app;
     private int wizardHouseX, wizardHouseY;
+    private float initialHp;  // Max health the monster spawns with
+    private float currentHp;  // Monster's current health
 
     public Monster(float spawnX, float spawnY, MonsterType type, App app, int wizardHouseX, int wizardHouseY) {
         this.x = spawnX;
@@ -14,6 +16,8 @@ public class Monster {
         this.app = app;
         this.wizardHouseX = wizardHouseX;
         this.wizardHouseY = wizardHouseY;
+        this.initialHp = type.getHp();
+        this.currentHp = initialHp;  // When the monster spawns, its current health is its maximum health
         
         this.currentTileX = Math.round(spawnX);
         this.currentTileY = Math.round(spawnY);
@@ -32,14 +36,13 @@ public class Monster {
         float healthBarHeight = 4;  // Arbitrary height for the health bar
         float healthBarX = x * App.CELLSIZE + offsetX;
         float healthBarY = y * App.CELLSIZE + App.TOPBAR + offsetY - healthBarHeight - 2;  // Above the monster, with a small gap
-        float currentHealthPercentage = type.getHp() / type.getHp();  // Assuming you have a getMaxHp() method in MonsterType class
+        float currentHealthPercentage = currentHp / initialHp;
     
         app.fill(255, 0, 0);  // Red color for background of health bar
         app.rect(healthBarX, healthBarY, healthBarWidth, healthBarHeight);
         app.fill(0, 255, 0);  // Green color for current health
         app.rect(healthBarX, healthBarY, healthBarWidth * currentHealthPercentage, healthBarHeight);
     }
-    
 
     public void move() {
         for (int i = 0; i < type.getSpeed(); i++) {
@@ -73,4 +76,13 @@ public class Monster {
     public MonsterType getType() {
         return type;
     }
+
+    // Method to take damage from fireballs
+    public void takeDamage(float damage) {
+        this.currentHp -= damage;
+        if (this.currentHp < 0) {
+            this.currentHp = 0;  // Ensure health doesn't go below 0
+        }
+    }
 }
+

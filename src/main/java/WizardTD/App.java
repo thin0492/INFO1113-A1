@@ -45,30 +45,35 @@ public class App extends PApplet {
     public String configPath;
     public Random random = new Random();
     public char[][] pathDirections = new char[BOARD_HEIGHT][BOARD_WIDTH];
-    private Buttons fastForwardButton, pauseButton, buildTowerButton, upgradeRangeButton, upgradeSpeedButton, upgradeDamageButton;
+    private Buttons fastForwardButton, pauseButton, buildTowerButton, upgradeRangeButton, upgradeSpeedButton, upgradeDamageButton, manaPoolSpellButton;
     private boolean gamePaused = false;
     private float gameSpeed = 1.0f;
-    ArrayList<Tower> towers = new ArrayList<>();
-    boolean placingTower = false;
-    float initialTowerRange;
-    float initialTowerFiringSpeed;
-    float initialTowerDamage;
+    private ArrayList<Tower> towers = new ArrayList<>();
+    private boolean placingTower = false;
+    private float initialTowerRange;
+    private float initialTowerFiringSpeed;
+    private float initialTowerDamage;
     private boolean isBuildingTower = false;
     private float towerCost;
     private float currentMana;
     private float manaCap;
     private float manaRegenRate;
-
+    private float manaPoolSpellInitialCost;
+    private float manaPoolSpellCostInc;
+    private float manaPoolSpellCapMult;
+    private float manaPoolSpellManaGainedMult;
 
 
     public App() {
         this.configPath = "config.json";
     }
 
+
     @Override
     public void settings() {
         size(WIDTH, HEIGHT);
     }
+
 
     @Override
     public void setup() {
@@ -89,6 +94,7 @@ public class App extends PApplet {
         upgradeRangeButton = new Buttons(startX, startY + 3 * (buttonSize + buttonSpacing), buttonSize, "Upgrade Range", "U1");
         upgradeSpeedButton = new Buttons(startX, startY + 4 * (buttonSize + buttonSpacing), buttonSize, "Upgrade Speed", "U2");
         upgradeDamageButton = new Buttons(startX, startY + 5 * (buttonSize + buttonSpacing), buttonSize, "Upgrade Damage", "U3");
+        manaPoolSpellButton = new Buttons(startX, startY + 6 * (buttonSize + buttonSpacing), buttonSize, "Mana Spell", "M");
 
         // Load images
         grassImg = loadImage("src/main/resources/WizardTD/grass.png");
@@ -130,6 +136,7 @@ public class App extends PApplet {
         bfs(wizardHouseX, wizardHouseY);
     }
 
+
     public char[][] readLayoutFile(String path) {
         char[][] layout = new char[BOARD_HEIGHT][BOARD_WIDTH];
         try {
@@ -152,6 +159,53 @@ public class App extends PApplet {
             e.printStackTrace();
         }
         return layout;
+    }
+    
+    
+    private void setupGameConfiguration() {
+        try {
+            JSONObject config = loadJSONObject(configPath);
+            String layoutFilePath = config.getString("layout");
+            layout = readLayoutFile(layoutFilePath);
+
+            initialTowerRange = config.getFloat("initial_tower_range");
+            initialTowerFiringSpeed = config.getFloat("initial_tower_firing_speed");
+            initialTowerDamage = config.getFloat("initial_tower_damage");
+            towerCost = config.getFloat("tower_cost");
+            currentMana = config.getFloat("initial_mana");
+            manaCap = config.getFloat("initial_mana_cap");
+            manaRegenRate = config.getFloat("initial_mana_gained_per_second");
+            manaPoolSpellInitialCost = config.getFloat("mana_pool_spell_initial_cost");
+            manaPoolSpellCostInc = config.getFloat("mana_pool_spell_cost_increase_per_use");
+            manaPoolSpellCapMult = config.getFloat("mana_pool_spell_cap_multiplier");
+            manaPoolSpellManaGainedMult = config.getFloat("mana_pool_spell_mana_gained_multiplier");
+
+
+            JSONArray wavesArray = config.getJSONArray("waves");
+            for (int i = 0; i < wavesArray.size(); i++) {
+                JSONObject waveData = wavesArray.getJSONObject(i);
+                Wave wave = new Wave(waveData.getFloat("duration"), waveData.getFloat("pre_wave_pause"), this);
+
+                JSONArray monstersArray = waveData.getJSONArray("monsters");
+                for (int j = 0; j < monstersArray.size(); j++) {
+                    JSONObject monsterData = monstersArray.getJSONObject(j);
+                    String type = monsterData.getString("type");
+                    float hp = monsterData.getFloat("hp");
+                    float speed = monsterData.getFloat("speed");
+                    float armour = monsterData.getFloat("armour");
+                    float manaGainedOnKill = monsterData.getFloat("mana_gained_on_kill");
+
+                    PImage sprite = loadImage("src/main/resources/WizardTD/" + type + ".png");
+                    MonsterType monsterType = new MonsterType(type, hp, speed, armour, manaGainedOnKill, sprite);
+
+                    wave.addMonsterType(monsterType, monsterData.getInt("quantity"));
+                }
+
+                waves.add(wave);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
 
@@ -242,8 +296,6 @@ public class App extends PApplet {
         this.pathDirections = directions;
     }
     
-    
-    
 
     private void updateAndDrawMonsters() {
         Iterator<Monster> iterator = activeMonsters.iterator();
@@ -265,48 +317,6 @@ public class App extends PApplet {
     }
 
 
-    private void setupGameConfiguration() {
-        try {
-            JSONObject config = loadJSONObject(configPath);
-            String layoutFilePath = config.getString("layout");
-            layout = readLayoutFile(layoutFilePath);
-
-            initialTowerRange = config.getFloat("initial_tower_range");
-            initialTowerFiringSpeed = config.getFloat("initial_tower_firing_speed");
-            initialTowerDamage = config.getFloat("initial_tower_damage");
-            towerCost = config.getFloat("tower_cost");
-            currentMana = config.getFloat("initial_mana");
-            manaCap = config.getFloat("initial_mana_cap");
-            manaRegenRate = config.getFloat("initial_mana_gained_per_second");
-
-
-            JSONArray wavesArray = config.getJSONArray("waves");
-            for (int i = 0; i < wavesArray.size(); i++) {
-                JSONObject waveData = wavesArray.getJSONObject(i);
-                Wave wave = new Wave(waveData.getFloat("duration"), waveData.getFloat("pre_wave_pause"), this);
-
-                JSONArray monstersArray = waveData.getJSONArray("monsters");
-                for (int j = 0; j < monstersArray.size(); j++) {
-                    JSONObject monsterData = monstersArray.getJSONObject(j);
-                    String type = monsterData.getString("type");
-                    float hp = monsterData.getFloat("hp");
-                    float speed = monsterData.getFloat("speed");
-                    float armour = monsterData.getFloat("armour");
-                    float manaGainedOnKill = monsterData.getFloat("mana_gained_on_kill");
-
-                    PImage sprite = loadImage("src/main/resources/WizardTD/" + type + ".png");
-                    MonsterType monsterType = new MonsterType(type, hp, speed, armour, manaGainedOnKill, sprite);
-
-                    wave.addMonsterType(monsterType, monsterData.getInt("quantity"));
-                }
-
-                waves.add(wave);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
     //  Receive key pressed signal from the keyboard.
 	@Override
     public void keyPressed(){
@@ -315,12 +325,15 @@ public class App extends PApplet {
         }
     }
 
+
     //  Receive key released signal from the keyboard.
 	@Override
     public void keyReleased(){
 
     }
 
+
+    // Recive mouse pressed signal from the mouse.
     @Override
     public void mousePressed(MouseEvent e) {
         if (fastForwardButton.isClicked(mouseX, mouseY)) {
@@ -330,9 +343,13 @@ public class App extends PApplet {
         } else if (buildTowerButton.isClicked(mouseX, mouseY)) {
             // Handle build tower button click
             activateBuildTowerMode();
+        } else if (manaPoolSpellButton.isClicked(mouseX, mouseY)) {
+            activateManaPoolSpell();
         } 
     }
 
+
+    // Recieve mouse released signal from the mouse.
     @Override
     public void mouseReleased(MouseEvent e) {
         if (buildTowerButton.isClicked(mouseX, mouseY)) {
@@ -353,15 +370,28 @@ public class App extends PApplet {
         }
     }
 
+
     /*@Override
     public void mouseDragged(MouseEvent e) {
 
     }*/
 
+
     private void activateBuildTowerMode() {
         placingTower = true;
     }
 
+
+    private void activateManaPoolSpell() {
+        if (currentMana >= manaPoolSpellInitialCost) {
+            currentMana -= manaPoolSpellInitialCost;
+            manaPoolSpellInitialCost += manaPoolSpellCostInc; // Increase the cost for the next use
+    
+            manaCap *= manaPoolSpellCapMult; // Increase the mana cap
+            manaRegenRate += manaRegenRate * manaPoolSpellManaGainedMult; // Increase mana regeneration rate
+        }
+    }
+    
 
     private void determinePaths() {
         PImage image = null;
@@ -426,6 +456,7 @@ public class App extends PApplet {
         }
     }
 
+
     public List<int[]> findBoundaryPathTiles() {
         List<int[]> boundaryTiles = new ArrayList<>();
     
@@ -453,9 +484,7 @@ public class App extends PApplet {
     }
 
 
-    /**
-     * Draw all elements in the game by current frame.
-     */
+    // Draw all elements in the game by current frame.
 	@Override
     public void draw() {
         currentMana = min(currentMana + manaRegenRate / FPS, manaCap);
@@ -476,6 +505,45 @@ public class App extends PApplet {
         // Draw the game board
         drawGameBoard();
 
+        // Draw towers
+        /*for (Tower tower : towers) {
+                    tower.display(this);
+        }*/
+        for (Tower tower : towers) {
+            for (Monster monster : activeMonsters) {
+                if (dist(tower.x * CELLSIZE + CELLSIZE/2, tower.y * CELLSIZE + CELLSIZE/2 + TOPBAR, monster.getExactX(), monster.getExactY()) <= tower.range) {
+                    if (random(1) < tower.firingSpeed / FPS) {  // Random chance to fire based on firing speed
+                        tower.fire(monster, this);
+                    }
+                }
+            }
+            // Draw and move fireballs for each tower
+            Iterator<Fireball> fireballIterator = tower.fireballs.iterator();
+            while (fireballIterator.hasNext()) {
+                Fireball fireball = fireballIterator.next();
+                fireball.move();
+                if (fireball.hasReachedTarget()) {
+                    // Deal damage to monster and remove the fireball
+                    Monster hitMonster = null;
+                    for (Monster monster : activeMonsters) {
+                        if (dist(fireball.x, fireball.y, monster.getExactX(), monster.getExactY()) <= 5) {  // Example size for monster radius
+                            float type.getHp() -= fireball.damage;
+                            if (monster.hp <= 0) {
+                                hitMonster = monster;  // Monster to be removed
+                                break;
+                            }
+                        }
+                    }
+                    if (hitMonster != null) {
+                        activeMonsters.remove(hitMonster);
+                    }
+                    fireballIterator.remove();
+                } else {
+                    fireball.display(this);
+                }
+            }
+        }
+                
         // Move and draw monsters
         updateAndDrawMonsters();
 
@@ -493,6 +561,7 @@ public class App extends PApplet {
         upgradeRangeButton.display(this);
         upgradeSpeedButton.display(this);
         upgradeDamageButton.display(this);
+        manaPoolSpellButton.display(this);
 
         /*int manaBarWidth = 300;  // Width of the mana bar
         int manaBarHeight = 20;  // Height of the mana bar
@@ -509,11 +578,10 @@ public class App extends PApplet {
         rect(manaBarX, manaBarY, filledWidth, manaBarHeight);*/
 
         drawManaBar();
-        for (Tower tower : towers) {
-            tower.display(this);
-        }
+        
 
     }
+
 
     private void drawManaBar() {
         int barWidth = 300;  // Making the bar 1.5 times wider
@@ -546,11 +614,11 @@ public class App extends PApplet {
     text(manaText, startX + barWidth / 2, startY + barHeight / 2);
     }
 
-    
 
     public static void main(String[] args) {
         PApplet.main("WizardTD.App");
     }
+
 
     /**
      * Source: https://stackoverflow.com/questions/37758061/rotate-a-buffered-image-in-java
