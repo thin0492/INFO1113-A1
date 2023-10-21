@@ -6,7 +6,7 @@ import processing.core.PImage;
 public class Fireball {
     float x, y;   // Current position
     Monster targetMonster;  // Target position (center of the monster)
-    float speed = 5;  // Speed in pixels per frame
+    float speed = 5 / 60;  // Speed in pixels per frame
     float damage;
     PImage img;  // Fireball image
 
@@ -47,8 +47,8 @@ public class Fireball {
         return PApplet.dist(x, y, targetX, targetY) < speed;
     }
 
-    public void display(PApplet p) {
-        p.image(img, x, y);  // Display the fireball image
-    }
+    //public void display(PApplet p) {
+        //p.image(img, x, y);  // Display the fireball image
+    //}
 }
 

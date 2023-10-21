@@ -2,7 +2,6 @@ package WizardTD;
 
 public class Monster {
     private float x, y;  // current position
-    private int currentTileX, currentTileY;
     private MonsterType type;
     private App app;
     private int wizardHouseX, wizardHouseY;
@@ -18,9 +17,6 @@ public class Monster {
         this.wizardHouseY = wizardHouseY;
         this.initialHp = type.getHp();
         this.currentHp = initialHp;  // When the monster spawns, its current health is its maximum health
-        
-        this.currentTileX = Math.round(spawnX);
-        this.currentTileY = Math.round(spawnY);
     }
 
     public void draw() {
@@ -55,9 +51,6 @@ public class Monster {
             case 'R': x -= moveAmount / 60; break;
         }
 
-        // Update the monster's current tile after each pixel movement
-        currentTileX = Math.round(x);
-        currentTileY = Math.round(y);
     }
 
     public int[] getPosition() {
