@@ -47,8 +47,8 @@ public class Fireball {
         return PApplet.dist(x, y, targetX, targetY) < speed;
     }
 
-    //public void display(PApplet p) {
-        //p.image(img, x, y);  // Display the fireball image
-    //}
+    public void display(PApplet p) {
+        p.image(img, x, y);  // Display the fireball image
+    }
 }
 
