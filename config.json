@@ -20,7 +20,7 @@
       "pre_wave_pause": 10,
       "monsters": [
         {
-          "type": "gremlin",
+          "type": "beetle",
           "hp": 50,
           "speed": 2.5,
           "armour": 0.7,
