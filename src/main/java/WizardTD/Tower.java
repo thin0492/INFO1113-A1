@@ -1,8 +1,8 @@
 package WizardTD;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Iterator;
+//import java.util.ArrayList;
+//import java.util.List;
+//import java.util.Iterator;
 
 import processing.core.PApplet;
 import processing.core.PImage;
@@ -17,7 +17,7 @@ public class Tower {
     int damageUpgradeLevel = 0;
     PImage tower0Img;
     boolean isBeingPlaced = false;
-    List<Fireball> fireballs = new ArrayList<>();
+    //List<Fireball> fireballs = new ArrayList<>();
     private float timeSinceLastFire = 0;
     public float fireCooldown = 0;
     public Fireball currentFireball = null;
@@ -69,6 +69,7 @@ public class Tower {
 
 
     public Fireball fire(Monster monster, PApplet p) {
+        System.out.println("Tower.java: fire() start");
         Fireball fireball = new Fireball(x * App.CELLSIZE + App.CELLSIZE/2, y * App.CELLSIZE + App.CELLSIZE/2 + App.TOPBAR, monster, damage, p);
         //fireballs.add(fireball);
         return fireball;
@@ -76,6 +77,7 @@ public class Tower {
 
 
     public void display(PApplet p) {
+        System.out.println("Tower.java: display() start");
         p.image(tower0Img, x * App.CELLSIZE, y * App.CELLSIZE + App.TOPBAR, App.CELLSIZE, App.CELLSIZE);
 
         if (isMouseOver(p)) {

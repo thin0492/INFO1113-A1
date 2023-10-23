@@ -25,6 +25,7 @@ public class App extends PApplet {
 
 
     //  Monsters & Waves handling
+    private int currentWaveJSONIndex = 0;
     private List<Wave> waves = new ArrayList<>();
     private List<Monster> activeMonsters = new ArrayList<>();
     private int currentWaveIndex = 0;
@@ -62,6 +63,8 @@ public class App extends PApplet {
     private float manaPoolSpellCostInc;
     private float manaPoolSpellCapMult;
     private float manaPoolSpellManaGainedMult;
+    private float spawnInterval;
+    private float totalQuantity;
 
 
     public App() {
@@ -180,28 +183,53 @@ public class App extends PApplet {
             manaPoolSpellCapMult = config.getFloat("mana_pool_spell_cap_multiplier");
             manaPoolSpellManaGainedMult = config.getFloat("mana_pool_spell_mana_gained_multiplier");
 
+            if (currentWaveJSONIndex < config.getJSONArray("waves").size()) {
+                JSONObject waveData = config.getJSONArray("waves").getJSONObject(currentWaveJSONIndex);
+                processWaveData(waveData);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 
-            JSONArray wavesArray = config.getJSONArray("waves");
-            for (int i = 0; i < wavesArray.size(); i++) {
-                JSONObject waveData = wavesArray.getJSONObject(i);
-                Wave wave = new Wave(waveData.getFloat("duration"), waveData.getFloat("pre_wave_pause"), this);
+    private void processWaveData(JSONObject waveData) {
+        try {
+            Wave wave = new Wave(waveData.getFloat("duration"), waveData.getFloat("pre_wave_pause"), this);
 
-                JSONArray monstersArray = waveData.getJSONArray("monsters");
-                for (int j = 0; j < monstersArray.size(); j++) {
-                    JSONObject monsterData = monstersArray.getJSONObject(j);
-                    String type = monsterData.getString("type");
-                    float hp = monsterData.getFloat("hp");
-                    float speed = monsterData.getFloat("speed");
-                    float armour = monsterData.getFloat("armour");
-                    float manaGainedOnKill = monsterData.getFloat("mana_gained_on_kill");
-
-                    PImage sprite = loadImage("src/main/resources/WizardTD/" + type + ".png");
-                    MonsterType monsterType = new MonsterType(type, hp, speed, armour, manaGainedOnKill, sprite);
-
-                    wave.addMonsterType(monsterType, monsterData.getInt("quantity"));
+            JSONArray monstersArray = waveData.getJSONArray("monsters");
+            for (int j = 0; j < monstersArray.size(); j++) {
+                JSONObject monsterData = monstersArray.getJSONObject(j);
+                String type = monsterData.getString("type");
+                float hp = monsterData.getFloat("hp");
+                float speed = monsterData.getFloat("speed");
+                float armour = monsterData.getFloat("armour");
+                float manaGainedOnKill = monsterData.getFloat("mana_gained_on_kill");
+                PImage sprite = loadImage("src/main/resources/WizardTD/" + type + ".png");
+                MonsterType monsterType = new MonsterType(type, hp, speed, armour, manaGainedOnKill, sprite);
+                if (j == 0) {
+                    totalQuantity = monsterData.getFloat("quantity");
+                } else {
+                    totalQuantity += monsterData.getFloat("quantity");
                 }
+                wave.addMonsterType(monsterType, monsterData.getInt("quantity"));
+                wave.totalMonstersInWave(totalQuantity);
+            }
+            waves.add(wave);
+            System.out.println(waves);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 
-                waves.add(wave);
+
+    public void loadNextWave() {
+        try {
+            JSONObject config = loadJSONObject(configPath);
+            currentWaveJSONIndex++;
+            
+            if (currentWaveJSONIndex < config.getJSONArray("waves").size()) {
+                JSONObject waveData = config.getJSONArray("waves").getJSONObject(currentWaveJSONIndex);
+                processWaveData(waveData);
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -488,18 +516,25 @@ public class App extends PApplet {
 	@Override
     public void draw() {
         currentMana = min(currentMana + manaRegenRate / FPS, manaCap);
-    
-        if (currentWaveIndex < waves.size()) {
-            Wave currentWave = waves.get(currentWaveIndex);
-            currentWave.update(1.0f / FPS);
-    
-            if (currentWave.shouldSpawnMonster()) {
-                Monster monster = currentWave.spawnMonster(this, wizardHouseX, wizardHouseY);
-                if (monster != null) {
-                    activeMonsters.add(monster);
-                }
+        
+        //if (currentWaveIndex < waves.size()) {
+        Wave currentWave = waves.get(waves.size() - 1);
+        currentWave.update(1.0f / FPS);
+
+        if (currentWave.shouldSpawnMonster()) {
+            Monster monster = currentWave.spawnMonster(this, wizardHouseX, wizardHouseY);
+            if (monster != null) {
+                activeMonsters.add(monster);
             }
         }
+        if (currentWave.isWaveOver()) {
+            System.out.println("WAVE OVER");
+            currentWaveIndex++;
+            loadNextWave();
+            
+        }
+        //}
+        
     
         // Draw the game board
         drawGameBoard();

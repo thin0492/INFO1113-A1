@@ -7,29 +7,37 @@ import java.util.List;
 import java.util.Random;
 
 public class Wave {
-    private float duration;  // Duration of the wave in seconds
+    private float duration;  // List of durations for each wave
     private float preWavePause;  // Time before the wave starts
+    private float preWavePauseTime; // Timer for pre wave pause
     private float elapsedTime;  // Time since the wave started
     private float timeSinceLastSpawn;  // Time since the last monster was spawned
+    private float spawnInterval;
+    private float totalMonsterCount;
 
     private List<MonsterTypeQuantity> monstersToSpawn = new ArrayList<>();
     private Random random = new Random();
 
     public Wave(float duration, float preWavePause, PApplet p) {
         this.duration = duration;
+        System.out.println("Duration: " + duration);
         this.preWavePause = preWavePause;
+        this.preWavePauseTime = 0;
         this.elapsedTime = 0;
         this.timeSinceLastSpawn = 0;
+        this.spawnInterval = getCurrentDuration() / totalMonsterCount;
     }
 
+
     public void update(float delta) {
-        if (elapsedTime < preWavePause) {
-            elapsedTime += delta;
+        if (preWavePauseTime < preWavePause) {
+            preWavePauseTime += delta;
+            System.out.println("Pre Wave: " + preWavePauseTime);
             return;
         }
-
         elapsedTime += delta;
         timeSinceLastSpawn += delta;
+        System.out.println("Elapsed Time: " + elapsedTime);
     }
 
     public void addMonsterType(MonsterType monsterType, int quantity) {
@@ -37,7 +45,8 @@ public class Wave {
     }
 
     public boolean shouldSpawnMonster() {
-        if (timeSinceLastSpawn > duration / totalMonstersInWave() && !monstersToSpawn.isEmpty()) {
+        //System.out.println(totalMonsterCount);
+        if (timeSinceLastSpawn >= duration/totalMonsterCount && !monstersToSpawn.isEmpty()) {
             timeSinceLastSpawn = 0;
             return true;
         }
@@ -47,7 +56,6 @@ public class Wave {
     public Monster spawnMonster(App app, int wizardHouseX, int wizardHouseY) {
         MonsterType monsterType = getNextMonsterTypeToSpawn();
         if (monsterType != null) {
-            // Get a valid spawn position for the monster
             List<int[]> boundaryTiles = app.findBoundaryPathTiles();
             int[] spawnPosition = boundaryTiles.get(random.nextInt(boundaryTiles.size()));
             int x = spawnPosition[0];
@@ -74,8 +82,23 @@ public class Wave {
         return monsterType;
     }
 
-    private int totalMonstersInWave() {
-        return monstersToSpawn.stream().mapToInt(MonsterTypeQuantity::getQuantity).sum();
+    // Check if the current wave is over
+    public boolean isWaveOver() {
+        //if (monstersToSpawn.isEmpty() && timeSinceLastSpawn > getCurrentDuration()) {
+        if (elapsedTime > duration) {
+            elapsedTime = 0;
+            //totalMonsterCount = null;
+            return true;
+        }
+        return false;
+    }
+
+    private float getCurrentDuration() {
+        return duration;
+    }
+
+    public void totalMonstersInWave(float totalQuantity) {
+        this.totalMonsterCount = totalQuantity;
     }
 }
 

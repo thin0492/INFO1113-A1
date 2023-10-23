@@ -75,11 +75,14 @@ public class Monster {
 
     // Method to take damage from fireballs
     public boolean takeDamage(float damage) {
+        System.out.println("Monster.java: takeDamage() start");
         this.currentHp -= damage;
         if (this.currentHp < 0) {
+            System.out.println("Monster.java: takeDamage() -> if (this.currentHp < 0)");
             this.currentHp = 0;  // Ensure health doesn't go below 0
             return true;
         }
+        System.out.println("Monster.java: takeDamage() -> return false");
         return false;
     }
 }

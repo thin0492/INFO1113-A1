@@ -7,7 +7,7 @@ public class Fireball {
     float x, y;   // Current position
     Monster targetMonster;  // Target position (center of the monster)
     float speed = 5 / 60;  // Speed in pixels per frame
-    float damage;
+    float damage; // Base damage to be dealt to monster
     PImage img;  // Fireball image
 
     public Fireball(float x, float y, Monster targetMonster, float damage, PApplet p) {
@@ -19,6 +19,7 @@ public class Fireball {
     }
 
     public boolean move() {
+        System.out.println("Fireball.java: move() start");
         float targetX = targetMonster.getExactX();
         float targetY = targetMonster.getExactY();
         float dx = targetX - x;
@@ -26,11 +27,13 @@ public class Fireball {
         float distance = PApplet.dist(x, y, targetX, targetY);
         
         if (hasReachedTarget()) {
+            System.out.println("Fireball.java: move() -> if (hasReachedTarget())");
             boolean monsterDied = targetMonster.takeDamage(damage);
             return monsterDied;
             // You might also want to remove this fireball from the list in the Tower class
         } else {
             // Normalize
+            System.out.println("Fireball.java: move() -> else");
             float nx = dx / distance;
             float ny = dy / distance;
             
@@ -42,12 +45,14 @@ public class Fireball {
     }
 
     public boolean hasReachedTarget() {
+        System.out.println("Fireball.java: hasReachedTarget() start");
         float targetX = targetMonster.getExactX();
         float targetY = targetMonster.getExactY();
         return PApplet.dist(x, y, targetX, targetY) < speed;
     }
 
     public void display(PApplet p) {
+        System.out.println("Fireball.java: display() start");
         p.image(img, x, y);  // Display the fireball image
     }
 }
