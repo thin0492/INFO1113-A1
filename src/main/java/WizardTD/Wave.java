@@ -12,32 +12,27 @@ public class Wave {
     private float preWavePauseTime; // Timer for pre wave pause
     private float elapsedTime;  // Time since the wave started
     private float timeSinceLastSpawn;  // Time since the last monster was spawned
-    private float spawnInterval;
     private float totalMonsterCount;
 
     private List<MonsterTypeQuantity> monstersToSpawn = new ArrayList<>();
     private Random random = new Random();
 
     public Wave(float duration, float preWavePause, PApplet p) {
-        this.duration = duration;
-        System.out.println("Duration: " + duration);
-        this.preWavePause = preWavePause;
+        this.duration = duration / App.gameSpeed;
+        this.preWavePause = preWavePause / App.gameSpeed;
         this.preWavePauseTime = 0;
         this.elapsedTime = 0;
         this.timeSinceLastSpawn = 0;
-        this.spawnInterval = getCurrentDuration() / totalMonsterCount;
     }
 
 
     public void update(float delta) {
         if (preWavePauseTime < preWavePause) {
             preWavePauseTime += delta;
-            System.out.println("Pre Wave: " + preWavePauseTime);
             return;
         }
         elapsedTime += delta;
         timeSinceLastSpawn += delta;
-        System.out.println("Elapsed Time: " + elapsedTime);
     }
 
     public void addMonsterType(MonsterType monsterType, int quantity) {
@@ -45,7 +40,6 @@ public class Wave {
     }
 
     public boolean shouldSpawnMonster() {
-        //System.out.println(totalMonsterCount);
         if (timeSinceLastSpawn >= duration/totalMonsterCount && !monstersToSpawn.isEmpty()) {
             timeSinceLastSpawn = 0;
             return true;
@@ -82,23 +76,34 @@ public class Wave {
         return monsterType;
     }
 
-    // Check if the current wave is over
+
     public boolean isWaveOver() {
-        //if (monstersToSpawn.isEmpty() && timeSinceLastSpawn > getCurrentDuration()) {
-        if (elapsedTime > duration) {
+        if (monstersToSpawn.isEmpty() && elapsedTime > duration) {
             elapsedTime = 0;
-            //totalMonsterCount = null;
             return true;
         }
         return false;
     }
 
-    private float getCurrentDuration() {
-        return duration;
-    }
 
     public void totalMonstersInWave(float totalQuantity) {
         this.totalMonsterCount = totalQuantity;
+    }
+
+    public float getDuration() {
+        return this.duration;
+    }
+
+    public float getElapsedTime() {
+        return this.elapsedTime;
+    }
+
+    public float getPreWavePause() {
+        return this.preWavePause;
+    }
+
+    public float getPreWavePauseTime() {
+        return this.preWavePauseTime;
     }
 }
 

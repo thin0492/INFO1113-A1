@@ -1,28 +1,38 @@
 package WizardTD;
 
-public class Monster {
+import processing.core.PApplet;
+import processing.core.PImage;
+
+public class Monster extends PApplet {
+    private static final int FRAMES_PER_DEATH_IMAGE = 4;
     private float x, y;  // current position
     private MonsterType type;
     private App app;
-    private int wizardHouseX, wizardHouseY;
     private float initialHp;  // Max health the monster spawns with
     private float currentHp;  // Monster's current health
+    private int deathAnimationFrame = 0;
+    private String monsterType;
+    public int imageIndex = 0;
+    public float adjustedSize = 1f * 32;
+    public float xOffset = (App.CELLSIZE - adjustedSize) / 2;
+    public float yOffset = (App.CELLSIZE - adjustedSize) / 2;
+
+    public boolean isDying = false;
 
     public Monster(float spawnX, float spawnY, MonsterType type, App app, int wizardHouseX, int wizardHouseY) {
         this.x = spawnX;
         this.y = spawnY;
         this.type = type;
         this.app = app;
-        this.wizardHouseX = wizardHouseX;
-        this.wizardHouseY = wizardHouseY;
         this.initialHp = type.getHp();
         this.currentHp = initialHp;  // When the monster spawns, its current health is its maximum health
+        this.monsterType = type.getType();
     }
 
     public void draw() {
-        float adjustedSize = 1f * 32;
-        float xOffset = (App.CELLSIZE - adjustedSize) / 2;
-        float yOffset = (App.CELLSIZE - adjustedSize) / 2;
+        //float adjustedSize = 1f * 32;
+        //float xOffset = (App.CELLSIZE - adjustedSize) / 2;
+        //float yOffset = (App.CELLSIZE - adjustedSize) / 2;
     
         // Draw the monster sprite
         app.image(type.getSprite(), x * App.CELLSIZE + xOffset, y * App.CELLSIZE + App.TOPBAR + yOffset, adjustedSize, adjustedSize);
@@ -41,21 +51,50 @@ public class Monster {
     }
 
     public void move() {
-        float moveAmount = type.getSpeed();  // This will be in pixels per frame
+        float moveAmount = type.getSpeed() * App.gameSpeed;  // This will be in pixels per frame
 
         char direction = app.pathDirections[Math.round(y)][Math.round(x)];
         switch(direction) {
-            case 'U': y += moveAmount / 60; break;
-            case 'D': y -= moveAmount / 60; break;
-            case 'L': x += moveAmount / 60; break;
-            case 'R': x -= moveAmount / 60; break;
+            case 'U': y += moveAmount / App.FPS; break;
+            case 'D': y -= moveAmount / App.FPS; break;
+            case 'L': x += moveAmount / App.FPS; break;
+            case 'R': x -= moveAmount / App.FPS; break;
         }
-
     }
 
     public int[] getPosition() {
         return new int[]{Math.round(x), Math.round(y)};
     }
+
+    public float takeDamage(float damage) {
+        this.currentHp -= damage * type.getArmour();
+        if (this.currentHp < 0) {
+            this.currentHp = 0;  // Ensure health doesn't go below 0
+            isDying = true;
+            return 0;
+        }
+        return this.currentHp;
+    }
+
+    public PImage getDeathAnimationImage() {
+        if (isDying) {
+            
+            deathAnimationFrame++;
+    
+            if (deathAnimationFrame > FRAMES_PER_DEATH_IMAGE / App.gameSpeed) {
+                isDying = false;
+                deathAnimationFrame = 0;
+                imageIndex++;
+                return null;
+            }
+    
+            if (imageIndex < 5) {
+                return App.deathImages[imageIndex];
+            }
+        }
+        return null;
+    }
+
 
     public float getExactX() {
         return x;
@@ -65,24 +104,19 @@ public class Monster {
         return y;
     }
 
+    public float getWidth() {
+        return xOffset;
+    }
+
+    public float getHeight() {
+        return yOffset;
+    }
+
     public MonsterType getType() {
         return type;
     }
 
     public float getCurrentHp() {
         return currentHp;
-    }
-
-    // Method to take damage from fireballs
-    public boolean takeDamage(float damage) {
-        System.out.println("Monster.java: takeDamage() start");
-        this.currentHp -= damage;
-        if (this.currentHp < 0) {
-            System.out.println("Monster.java: takeDamage() -> if (this.currentHp < 0)");
-            this.currentHp = 0;  // Ensure health doesn't go below 0
-            return true;
-        }
-        System.out.println("Monster.java: takeDamage() -> return false");
-        return false;
-    }
+    }  
 }

@@ -4,56 +4,41 @@ import processing.core.PApplet;
 import processing.core.PImage;
 
 public class Fireball {
-    float x, y;   // Current position
-    Monster targetMonster;  // Target position (center of the monster)
-    float speed = 5 / 60;  // Speed in pixels per frame
-    float damage; // Base damage to be dealt to monster
-    PImage img;  // Fireball image
+    float x, y;
+    Monster targetMonster;
+    float damage;
+    float speed = 5;
+    PApplet p;
+    PImage fireballImg;
+    App app;
 
-    public Fireball(float x, float y, Monster targetMonster, float damage, PApplet p) {
+    public Fireball(float x, float y, Monster targetMonster, float damage, PApplet p, PImage fireballImg) {
         this.x = x;
         this.y = y;
         this.targetMonster = targetMonster;
         this.damage = damage;
-        this.img = p.loadImage("src/main/resources/WizardTD/fireball.png");
+        this.p = p;
+        this.fireballImg = fireballImg;
     }
 
-    public boolean move() {
-        System.out.println("Fireball.java: move() start");
-        float targetX = targetMonster.getExactX();
-        float targetY = targetMonster.getExactY();
-        float dx = targetX - x;
-        float dy = targetY - y;
+    public void move() {
+        float targetX = targetMonster.getExactX() * App.CELLSIZE;
+        float targetY = targetMonster.getExactY() * App.CELLSIZE + App.TOPBAR;
+
         float distance = PApplet.dist(x, y, targetX, targetY);
-        
-        if (hasReachedTarget()) {
-            System.out.println("Fireball.java: move() -> if (hasReachedTarget())");
-            boolean monsterDied = targetMonster.takeDamage(damage);
-            return monsterDied;
-            // You might also want to remove this fireball from the list in the Tower class
-        } else {
-            // Normalize
-            System.out.println("Fireball.java: move() -> else");
-            float nx = dx / distance;
-            float ny = dy / distance;
-            
-            // Move
-            x += nx * speed;
-            y += ny * speed;
-        }
-        return false;
+        float dx = (targetX - x) / distance;
+        float dy = (targetY - y) / distance;
+        x += dx * speed;
+        y += dy * speed;
     }
 
     public boolean hasReachedTarget() {
-        System.out.println("Fireball.java: hasReachedTarget() start");
-        float targetX = targetMonster.getExactX();
-        float targetY = targetMonster.getExactY();
-        return PApplet.dist(x, y, targetX, targetY) < speed;
+        float distance = PApplet.dist(x, y, targetMonster.getExactX() * App.CELLSIZE, targetMonster.getExactY() * App.CELLSIZE + App.TOPBAR);
+        return distance < speed;
     }
 
-    public void display(PApplet p) {
-        System.out.println("Fireball.java: display() start");
-        p.image(img, x, y);  // Display the fireball image
+    public void display() {
+        p.image(fireballImg, x, y);
     }
 }
 
