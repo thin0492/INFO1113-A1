@@ -1,16 +1,16 @@
 package WizardTD;
 
+import WizardTD.Interfaces.Drawable;
 import processing.core.PApplet;
 import processing.core.PImage;
 
-public class Fireball {
+public class Fireball implements Drawable{
     float x, y;
     Monster targetMonster;
     float damage;
     float speed = 5;
     PApplet p;
     PImage fireballImg;
-    App app;
 
     public Fireball(float x, float y, Monster targetMonster, float damage, PApplet p, PImage fireballImg) {
         this.x = x;
@@ -37,7 +37,8 @@ public class Fireball {
         return distance < speed;
     }
 
-    public void display() {
+    @Override
+    public void draw(PApplet p) {
         p.image(fireballImg, x, y);
     }
 }

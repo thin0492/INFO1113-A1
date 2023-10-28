@@ -1,9 +1,9 @@
 package WizardTD;
 
 
-import processing.core.PApplet;
+//import processing.core.PApplet;
 import org.junit.jupiter.api.Test;
-import static org.junit.jupiter.api.Assertions.*;
+//import static org.junit.jupiter.api.Assertions.*;
 
 public class SampleTest {
 

@@ -1,0 +1,291 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Diagram>
+  <ID>JAVA</ID>
+  <OriginalElement>C:/Users/User/Documents/Uni/INFO1113-A1-main/INFO1113-A1/INFO1113-A1/src/main</OriginalElement>
+  <nodes>
+    <node x="938.1662234042553" y="1416.0">WizardTD.Interfaces.Updateable</node>
+    <node x="-110.0" y="1186.0">WizardTD.Wave</node>
+    <node x="471.79654255319156" y="1294.0">WizardTD.Fireball</node>
+    <node x="252.0" y="393.0">WizardTD.Monster</node>
+    <node x="920.9162234042553" y="2243.0">WizardTD.Buttons</node>
+    <node x="1198.9162234042553" y="2219.0">WizardTD.Bomb</node>
+    <node x="-0.375" y="1763.0">WizardTD.ConfigLoader</node>
+    <node x="878.0465425531916" y="132.0">WizardTD.Interfaces.Drawable</node>
+    <node x="704.125" y="3116.0">WizardTD.App</node>
+    <node x="-16.708776595744666" y="-14.0">WizardTD.MonsterType</node>
+    <node x="-89.5" y="669.0">WizardTD.MonsterTypeQuantity</node>
+    <node x="495.91622340425533" y="1907.0">WizardTD.Tower</node>
+    <node x="1526.9162234042553" y="2099.0">WizardTD.Board</node>
+  </nodes>
+  <notes />
+  <edges>
+    <edge source="WizardTD.App" target="WizardTD.Monster" relationship="TO_MANY">
+      <point x="-71.25" y="-1005.5" />
+      <point x="775.375" y="3095.0" />
+      <point x="684.25" y="3095.0" />
+      <point x="684.25" y="3085.0" />
+      <point x="461.29654255319156" y="3085.0" />
+      <point x="461.29654255319156" y="1164.0" />
+      <point x="531.0" y="1164.0" />
+      <point x="93.0" y="369.5" />
+    </edge>
+    <edge source="WizardTD.Tower" target="WizardTD.Interfaces.Drawable" relationship="REALIZATION">
+      <point x="135.0" y="-501.5" />
+      <point x="833.4162234042553" y="1741.0" />
+      <point x="871.8803191489362" y="1741.0" />
+      <point x="871.8803191489362" y="372.0" />
+      <point x="962.5465425531916" y="372.0" />
+      <point x="0.0" y="31.5" />
+    </edge>
+    <edge source="WizardTD.Buttons" target="WizardTD.Interfaces.Drawable" relationship="REALIZATION">
+      <point x="0.0" y="-165.5" />
+      <point x="1049.9162234042553" y="1741.0" />
+      <point x="1090.6662234042553" y="1741.0" />
+      <point x="1090.6662234042553" y="372.0" />
+      <point x="962.5465425531916" y="372.0" />
+      <point x="0.0" y="31.5" />
+    </edge>
+    <edge source="WizardTD.App" target="WizardTD.Wave" relationship="TO_MANY">
+      <point x="-71.25" y="-1005.5" />
+      <point x="775.375" y="3095.0" />
+      <point x="684.25" y="3095.0" />
+      <point x="684.25" y="3085.0" />
+      <point x="-10.875" y="3085.0" />
+      <point x="-10.875" y="1741.0" />
+      <point x="55.5" y="1741.0" />
+      <point x="55.5" y="1731.0" />
+      <point x="-24.75" y="1731.0" />
+      <point x="-85.25" y="261.5" />
+    </edge>
+    <edge source="WizardTD.Bomb" target="WizardTD.Interfaces.Drawable" relationship="REALIZATION">
+      <point x="0.0" y="-189.5" />
+      <point x="1352.9162234042553" y="372.0" />
+      <point x="962.5465425531916" y="372.0" />
+      <point x="0.0" y="31.5" />
+    </edge>
+    <edge source="WizardTD.Wave" target="WizardTD.Monster" relationship="CREATE">
+      <point x="85.25" y="-261.5" />
+      <point x="145.75" y="1164.0" />
+      <point x="65.5" y="1164.0" />
+      <point x="65.5" y="1154.0" />
+      <point x="345.0" y="1154.0" />
+      <point x="-93.0" y="369.5" />
+    </edge>
+    <edge source="WizardTD.ConfigLoader" target="WizardTD.MonsterType" relationship="CREATE">
+      <point x="76.0" y="-645.5" />
+      <point x="227.625" y="1741.0" />
+      <point x="156.625" y="1741.0" />
+      <point x="156.625" y="1731.0" />
+      <point x="241.5" y="1731.0" />
+      <point x="241.5" y="362.0" />
+      <point x="264.54122340425533" y="362.0" />
+      <point x="93.75" y="177.5" />
+    </edge>
+    <edge source="WizardTD.App" target="WizardTD.Tower" relationship="TO_MANY">
+      <point x="-71.25" y="-1005.5" />
+      <point x="775.375" y="3095.0" />
+      <point x="684.25" y="3095.0" />
+      <point x="684.25" y="3085.0" />
+      <point x="597.1662234042553" y="3085.0" />
+      <point x="-101.25" y="501.5" />
+    </edge>
+    <edge source="WizardTD.ConfigLoader" target="WizardTD.Wave" relationship="TO_MANY">
+      <point x="-76.0" y="-645.5" />
+      <point x="75.625" y="1741.0" />
+      <point x="55.5" y="1741.0" />
+      <point x="55.5" y="1731.0" />
+      <point x="-24.75" y="1731.0" />
+      <point x="-85.25" y="261.5" />
+    </edge>
+    <edge source="WizardTD.App" target="WizardTD.ConfigLoader" relationship="TO_ONE">
+      <point x="-71.25" y="-1005.5" />
+      <point x="775.375" y="3095.0" />
+      <point x="684.25" y="3095.0" />
+      <point x="684.25" y="3085.0" />
+      <point x="75.625" y="3085.0" />
+      <point x="-76.0" y="645.5" />
+    </edge>
+    <edge source="WizardTD.ConfigLoader" target="WizardTD.App" relationship="TO_ONE">
+      <point x="-76.0" y="645.5" />
+      <point x="75.625" y="3085.0" />
+      <point x="684.25" y="3085.0" />
+      <point x="684.25" y="3095.0" />
+      <point x="775.375" y="3095.0" />
+      <point x="-71.25" y="-1005.5" />
+    </edge>
+    <edge source="WizardTD.App" target="WizardTD.Bomb" relationship="CREATE">
+      <point x="71.25" y="-1005.5" />
+      <point x="917.875" y="3095.0" />
+      <point x="1659.6329787234042" y="3095.0" />
+      <point x="1659.6329787234042" y="3075.0" />
+      <point x="1429.9162234042553" y="3075.0" />
+      <point x="77.0" y="189.5" />
+    </edge>
+    <edge source="WizardTD.Monster" target="WizardTD.App" relationship="TO_ONE">
+      <point x="93.0" y="369.5" />
+      <point x="531.0" y="1164.0" />
+      <point x="461.29654255319156" y="1164.0" />
+      <point x="461.29654255319156" y="3085.0" />
+      <point x="684.25" y="3085.0" />
+      <point x="684.25" y="3095.0" />
+      <point x="775.375" y="3095.0" />
+      <point x="-71.25" y="-1005.5" />
+    </edge>
+    <edge source="WizardTD.Monster" target="WizardTD.Interfaces.Drawable" relationship="REALIZATION">
+      <point x="93.0" y="-369.5" />
+      <point x="531.0" y="372.0" />
+      <point x="962.5465425531916" y="372.0" />
+      <point x="0.0" y="31.5" />
+    </edge>
+    <edge source="WizardTD.App" target="WizardTD.Bomb" relationship="TO_MANY">
+      <point x="-71.25" y="-1005.5" />
+      <point x="775.375" y="3095.0" />
+      <point x="684.25" y="3095.0" />
+      <point x="684.25" y="3085.0" />
+      <point x="1275.9162234042553" y="3085.0" />
+      <point x="-77.0" y="189.5" />
+    </edge>
+    <edge source="WizardTD.Fireball" target="WizardTD.Monster" relationship="TO_ONE">
+      <point x="-93.0" y="-153.5" />
+      <point x="564.7965425531916" y="1164.0" />
+      <point x="531.0" y="1164.0" />
+      <point x="93.0" y="369.5" />
+    </edge>
+    <edge source="WizardTD.MonsterTypeQuantity" target="WizardTD.MonsterType" relationship="TO_ONE">
+      <point x="0.0" y="-93.5" />
+      <point x="60.5" y="372.0" />
+      <point x="85.41622340425533" y="372.0" />
+      <point x="85.41622340425533" y="362.0" />
+      <point x="77.04122340425533" y="362.0" />
+      <point x="-93.75" y="177.5" />
+    </edge>
+    <edge source="WizardTD.App" target="WizardTD.Buttons" relationship="CREATE">
+      <point x="71.25" y="-1005.5" />
+      <point x="917.875" y="3095.0" />
+      <point x="1659.6329787234042" y="3095.0" />
+      <point x="1659.6329787234042" y="3075.0" />
+      <point x="1114.4162234042553" y="3075.0" />
+      <point x="64.5" y="165.5" />
+    </edge>
+    <edge source="WizardTD.Wave" target="WizardTD.MonsterTypeQuantity" relationship="TO_MANY">
+      <point x="-85.25" y="-261.5" />
+      <point x="-24.75" y="1164.0" />
+      <point x="-14.5" y="1164.0" />
+      <point x="-75.0" y="93.5" />
+    </edge>
+    <edge source="WizardTD.Tower" target="WizardTD.Fireball" relationship="CREATE">
+      <point x="-135.0" y="-501.5" />
+      <point x="563.4162234042553" y="1741.0" />
+      <point x="564.7965425531916" y="1741.0" />
+      <point x="-93.0" y="153.5" />
+    </edge>
+    <edge source="WizardTD.Board" target="WizardTD.Interfaces.Drawable" relationship="REALIZATION">
+      <point x="0.0" y="-309.5" />
+      <point x="1698.9162234042553" y="372.0" />
+      <point x="962.5465425531916" y="372.0" />
+      <point x="0.0" y="31.5" />
+    </edge>
+    <edge source="WizardTD.Buttons" target="WizardTD.Interfaces.Updateable" relationship="REALIZATION">
+      <point x="0.0" y="-165.5" />
+      <point x="1049.9162234042553" y="1741.0" />
+      <point x="1009.1662234042553" y="1741.0" />
+      <point x="0.0" y="31.5" />
+    </edge>
+    <edge source="WizardTD.ConfigLoader" target="WizardTD.Wave" relationship="CREATE">
+      <point x="76.0" y="-645.5" />
+      <point x="227.625" y="1741.0" />
+      <point x="156.625" y="1741.0" />
+      <point x="156.625" y="1731.0" />
+      <point x="145.75" y="1731.0" />
+      <point x="85.25" y="261.5" />
+    </edge>
+    <edge source="WizardTD.App" target="WizardTD.Board" relationship="CREATE">
+      <point x="71.25" y="-1005.5" />
+      <point x="917.875" y="3095.0" />
+      <point x="1659.6329787234042" y="3095.0" />
+      <point x="1659.6329787234042" y="3075.0" />
+      <point x="1784.9162234042553" y="3075.0" />
+      <point x="86.0" y="309.5" />
+    </edge>
+    <edge source="WizardTD.Fireball" target="WizardTD.Interfaces.Drawable" relationship="REALIZATION">
+      <point x="93.0" y="-153.5" />
+      <point x="750.7965425531916" y="1164.0" />
+      <point x="639.5" y="1164.0" />
+      <point x="639.5" y="372.0" />
+      <point x="962.5465425531916" y="372.0" />
+      <point x="0.0" y="31.5" />
+    </edge>
+    <edge source="WizardTD.App" target="WizardTD.Tower" relationship="CREATE">
+      <point x="71.25" y="-1005.5" />
+      <point x="917.875" y="3095.0" />
+      <point x="1659.6329787234042" y="3095.0" />
+      <point x="1659.6329787234042" y="3075.0" />
+      <point x="799.6662234042553" y="3075.0" />
+      <point x="101.25" y="501.5" />
+    </edge>
+    <edge source="WizardTD.Wave" target="WizardTD.MonsterTypeQuantity" relationship="CREATE">
+      <point x="85.25" y="-261.5" />
+      <point x="145.75" y="1164.0" />
+      <point x="65.5" y="1164.0" />
+      <point x="65.5" y="1154.0" />
+      <point x="135.5" y="1154.0" />
+      <point x="75.0" y="93.5" />
+    </edge>
+    <edge source="WizardTD.Monster" target="WizardTD.MonsterType" relationship="TO_ONE">
+      <point x="-93.0" y="-369.5" />
+      <point x="345.0" y="372.0" />
+      <point x="85.41622340425533" y="372.0" />
+      <point x="85.41622340425533" y="362.0" />
+      <point x="77.04122340425533" y="362.0" />
+      <point x="-93.75" y="177.5" />
+    </edge>
+    <edge source="WizardTD.App" target="WizardTD.Board" relationship="TO_ONE">
+      <point x="-71.25" y="-1005.5" />
+      <point x="775.375" y="3095.0" />
+      <point x="684.25" y="3095.0" />
+      <point x="684.25" y="3085.0" />
+      <point x="1612.9162234042553" y="3085.0" />
+      <point x="-86.0" y="309.5" />
+    </edge>
+    <edge source="WizardTD.Board" target="WizardTD.App" relationship="TO_ONE">
+      <point x="-86.0" y="309.5" />
+      <point x="1612.9162234042553" y="3085.0" />
+      <point x="684.25" y="3085.0" />
+      <point x="684.25" y="3095.0" />
+      <point x="775.375" y="3095.0" />
+      <point x="-71.25" y="-1005.5" />
+    </edge>
+    <edge source="WizardTD.App" target="WizardTD.Buttons" relationship="TO_ONE">
+      <point x="-71.25" y="-1005.5" />
+      <point x="775.375" y="3095.0" />
+      <point x="684.25" y="3095.0" />
+      <point x="684.25" y="3085.0" />
+      <point x="985.4162234042553" y="3085.0" />
+      <point x="-64.5" y="165.5" />
+    </edge>
+    <edge source="WizardTD.Tower" target="WizardTD.Fireball" relationship="TO_MANY">
+      <point x="0.0" y="-501.5" />
+      <point x="698.4162234042553" y="1741.0" />
+      <point x="750.7965425531916" y="1741.0" />
+      <point x="93.0" y="153.5" />
+    </edge>
+    <edge source="WizardTD.App" target="WizardTD.ConfigLoader" relationship="CREATE">
+      <point x="71.25" y="-1005.5" />
+      <point x="917.875" y="3095.0" />
+      <point x="1659.6329787234042" y="3095.0" />
+      <point x="1659.6329787234042" y="3075.0" />
+      <point x="227.625" y="3075.0" />
+      <point x="76.0" y="645.5" />
+    </edge>
+  </edges>
+  <settings layout="Hierarchic" zoom="0.30129819802363883" showDependencies="true" x="890.5000000000005" y="2169.9948553054664" />
+  <SelectedNodes />
+  <Categories>
+    <Category>Constructors</Category>
+    <Category>Fields</Category>
+    <Category>Methods</Category>
+  </Categories>
+  <SCOPE>All</SCOPE>
+  <VISIBILITY>private</VISIBILITY>
+</Diagram>
+

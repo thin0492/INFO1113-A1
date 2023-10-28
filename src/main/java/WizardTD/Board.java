@@ -1,6 +1,6 @@
 package WizardTD;
 
-//import jogamp.graph.geom.plane.AffineTransform;
+
 import processing.core.PApplet;
 import processing.core.PImage;
 
@@ -9,7 +9,9 @@ import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import java.util.*;
 
-public class Board {
+import WizardTD.Interfaces.Drawable;
+
+public class Board implements Drawable{
     //private PApplet p;
     private App app;
     private char[][] layout;
@@ -49,15 +51,14 @@ public class Board {
             for (int x = 0; x < BOARD_WIDTH; x++) {
                 if (layout[y][x] == 'S') {
                     shrubTypes[y][x] = (int) app.random(0, 5);
-                } /*else {
-                    shrubTypes[y][x] = -1; // -1 indicates no shrub
-                }*/
+                }
             }
         }
     }
 
     // Method to draw the board
-    public void drawGameBoard(PApplet app) {
+    @Override
+    public void draw(PApplet app) {
         for (int y = 0; y < BOARD_HEIGHT; y++) {
             for (int x = 0; x < BOARD_WIDTH; x++) {
                 switch (layout[y][x]) {
@@ -150,18 +151,18 @@ public class Board {
                             angle = 90;
                         }
                     } else if (directions.size() == 3) {
-                        if (!directions.contains("left")) {
+                        if (!directions.contains("above")) {
                             image = path2Img;
                             angle = 0;
-                        } else if (!directions.contains("above")) {
-                            image = path2Img;
-                            angle = 90;
                         } else if (!directions.contains("right")) {
                             image = path2Img;
                             angle = 90;
                         } else if (!directions.contains("below")) {
                             image = path2Img;
                             angle = 180;
+                        } else if (!directions.contains("left")) {
+                            image = path2Img;
+                            angle = 270;
                         }
                     } else if (directions.size() == 4) {
                         image = path3Img;

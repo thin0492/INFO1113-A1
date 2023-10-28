@@ -1,23 +1,25 @@
 package WizardTD;
 
+import WizardTD.Interfaces.Drawable;
 import processing.core.PApplet;
 import processing.core.PImage;
 
-public class Monster extends PApplet {
-    private static final int FRAMES_PER_DEATH_IMAGE = 4;
+public class Monster implements Drawable{
+    public static final int FRAMES_PER_DEATH_IMAGE = 4;
     private float x, y;  // current position
     private MonsterType type;
     private App app;
     private float initialHp;  // Max health the monster spawns with
     private float currentHp;  // Monster's current health
     private int deathAnimationFrame = 0;
-    private String monsterType;
     public int imageIndex = 0;
-    public float adjustedSize = 1f * 32;
+    public float adjustedSize = 0.8f * App.CELLSIZE;
     public float xOffset = (App.CELLSIZE - adjustedSize) / 2;
     public float yOffset = (App.CELLSIZE - adjustedSize) / 2;
+    private char lastDir = ' ';
 
     public boolean isDying = false;
+    private boolean manaGiven = false;
 
     public Monster(float spawnX, float spawnY, MonsterType type, App app, int wizardHouseX, int wizardHouseY) {
         this.x = spawnX;
@@ -26,13 +28,10 @@ public class Monster extends PApplet {
         this.app = app;
         this.initialHp = type.getHp();
         this.currentHp = initialHp;  // When the monster spawns, its current health is its maximum health
-        this.monsterType = type.getType();
     }
 
-    public void draw() {
-        //float adjustedSize = 1f * 32;
-        //float xOffset = (App.CELLSIZE - adjustedSize) / 2;
-        //float yOffset = (App.CELLSIZE - adjustedSize) / 2;
+    @Override
+    public void draw(PApplet p) {
     
         // Draw the monster sprite
         app.image(type.getSprite(), x * App.CELLSIZE + xOffset, y * App.CELLSIZE + App.TOPBAR + yOffset, adjustedSize, adjustedSize);
@@ -51,19 +50,130 @@ public class Monster extends PApplet {
     }
 
     public void move() {
-        float moveAmount = type.getSpeed() * App.gameSpeed;  // This will be in pixels per frame
+        float moveAmount = (type.getSpeed() * App.gameSpeed) / App.FPS;  // This will be in pixels per frame
+        float edgeX = Math.round(x) - xOffset;  // Far edge in the horizontal direction
+        float edgeY = Math.round(y) - yOffset;
 
         char direction = app.pathDirections[Math.round(y)][Math.round(x)];
-        switch(direction) {
-            case 'U': y += moveAmount / App.FPS; break;
-            case 'D': y -= moveAmount / App.FPS; break;
-            case 'L': x += moveAmount / App.FPS; break;
-            case 'R': x -= moveAmount / App.FPS; break;
-        }
+        Runnable continueLastDirection = () -> {
+            switch (lastDir) {
+                case 'U': y -= moveAmount; break;
+                case 'D': y += moveAmount; break;
+                case 'L': x -= moveAmount; break;
+                case 'R': x += moveAmount; break;
+            }
+        };
+    
+        // Check for direction change
+
+        //if (lastDir != direction) {
+            if (lastDir == ' ') {
+                lastDir = direction;
+            }
+            switch (direction) {
+                case 'U':
+                    if (lastDir == 'L') {
+                        if (x - xOffset < edgeX) {
+                        
+                            lastDir = 'U';
+                            y -= moveAmount;
+                        } else {
+                            continueLastDirection.run();
+                        }
+                    } else if (lastDir == 'R') {
+                        if (x - xOffset > edgeX) {
+                        
+                            lastDir = 'U';
+                            y -= moveAmount;
+                        } else {
+                            continueLastDirection.run();
+                        }
+                    }
+                    
+                     else {
+                        continueLastDirection.run();
+                    }
+                    break;
+
+                case 'D':
+                    if (lastDir == 'L') {
+                        if (x - xOffset <= edgeX) {
+                        
+                            lastDir = 'D';
+                            y += moveAmount;
+                        } else {
+                            continueLastDirection.run();
+                        }
+                    } else if (lastDir == 'R') {
+                        if (x - xOffset >= edgeX) {
+                        
+                            lastDir = 'D';
+                            y += moveAmount;
+                        } else {
+                            continueLastDirection.run();
+                        }
+                    }
+                    
+                     else {
+                        continueLastDirection.run();
+                    }
+                    break;
+
+                case 'L':
+                    if (lastDir == 'U') {
+                        if (y - yOffset <= edgeY) {
+                        
+                            lastDir = 'L';
+                            x -= moveAmount;
+                        } else {
+                            continueLastDirection.run();
+                        }
+                    } else if (lastDir == 'D') {
+                        if (y - yOffset >= edgeY) {
+                        
+                            lastDir = 'L';
+                            x -= moveAmount;
+                        } else {
+                            continueLastDirection.run();
+                        }
+                    }
+                    
+                     else {
+                        continueLastDirection.run();
+                    }
+                    break;
+                case 'R':
+                    if (lastDir == 'U') {
+                        if (y - yOffset <= edgeY) {
+                        
+                            lastDir = 'R';
+                            x += moveAmount;
+                        } else {
+                            continueLastDirection.run();
+                        }
+                    } else if (lastDir == 'D') {
+                        if (y - yOffset >= edgeY) {
+                        
+                            lastDir = 'R';
+                            x += moveAmount;
+                        } else {
+                            continueLastDirection.run();
+                        }
+                    }
+                    
+                     else {
+                        continueLastDirection.run();
+                    }
+                    break;
+            }
+        //} else {
+            // If the direction hasn't changed, just continue moving
+            //continueLastDirection.run();
+        //}
     }
 
-    public int[] getPosition() {
-        return new int[]{Math.round(x), Math.round(y)};
+    public float[] getPosition() {
+        return new float[]{x, y};
     }
 
     public float takeDamage(float damage) {
@@ -71,6 +181,7 @@ public class Monster extends PApplet {
         if (this.currentHp < 0) {
             this.currentHp = 0;  // Ensure health doesn't go below 0
             isDying = true;
+            manaGiven = false;
             return 0;
         }
         return this.currentHp;
@@ -119,4 +230,12 @@ public class Monster extends PApplet {
     public float getCurrentHp() {
         return currentHp;
     }  
+
+    public boolean hasManaBeenGiven() {
+        return manaGiven;
+    }
+
+    public void setManaGiven(boolean given) {
+        this.manaGiven = given;
+    }
 }

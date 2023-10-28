@@ -1,8 +1,10 @@
 package WizardTD;
 
+import WizardTD.Interfaces.Drawable;
+import WizardTD.Interfaces.Updateable;
 import processing.core.PApplet;
 
-public class Buttons {
+public class Buttons implements Drawable, Updateable{
     //private PApplet p;
     private int x, y, width, height;
     private String label;
@@ -20,64 +22,18 @@ public class Buttons {
     }   
 
 
-    public void toggleActive() {
+    public void update() {
         this.isActive = !this.isActive;
     }
 
 
-    /*public void toggleFastForward() {
-        // Implement the logic for toggling fast forward here
-        this.toggleActive();
-    }
-
-
-    public void togglePause() {
-        // Implement the logic for toggling pause here
-        this.toggleActive();
-    }
-
-
-    public void toggleBuildTowerMode() {
-        // Implement the logic for toggling build tower mode here
-        this.toggleActive();
-    }
-
-
-    public void toggleUpgradeRange() {
-        // Implement the logic for toggling upgrade range here
-        this.toggleActive();
-    }
-
-
-    public void toggleUpgradeSpeed() {
-        // Implement the logic for toggling upgrade speed here
-        this.toggleActive();
-    }
-
-
-    public void toggleUpgradeDamage() {
-        // Implement the logic for toggling upgrade damage here
-        this.toggleActive();
-    }
-
-
-    public void activateManaPoolSpell(ManaState manaState) {
-        if (manaState.currentMana >= manaState.manaPoolSpellInitialCost) {
-            manaState.currentMana -= manaState.manaPoolSpellInitialCost;
-            manaState.manaPoolSpellInitialCost += ManaState.manaPoolSpellCostInc;
-
-            manaState.manaCap *= ManaState.manaPoolSpellCapMult;
-            manaState.manaRegenRate += manaState.manaRegenRate * ManaState.manaPoolSpellManaGainedMult;
-            
-            this.toggleActive();
-        }
-    }*/
-
-
-    public void display(PApplet p) {
+    @Override
+    public void draw(PApplet p) {
         p.stroke(0);
         p.strokeWeight(3);
-        if (isActive) {
+        if (isHovered(p.mouseX, p.mouseY) && !isActive) {
+            p.fill(200); // Grey color for hover
+        } else if (isActive) {
             p.fill(255, 255, 0); // Yellow color for active state
         } else {
             p.fill(150, 108, 51); // Original color
@@ -99,6 +55,9 @@ public class Buttons {
         }
     }
     
+    public boolean isHovered(int mouseX, int mouseY) {
+        return mouseX >= x && mouseX <= x + width && mouseY >= y && mouseY <= y + height;
+    }
 
     public boolean isClicked(int mouseX, int mouseY) {
         return mouseX >= x && mouseX <= x + width && mouseY >= y && mouseY <= y + height;

@@ -2,12 +2,15 @@ package WizardTD;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import WizardTD.Interfaces.Drawable;
+
 import java.util.Iterator;
 
 import processing.core.PApplet;
 import processing.core.PImage;
 
-public class Tower {
+public class Tower implements Drawable{
     int x, y;
     float range, firingSpeed, damage;
     int rangeUpgradeLevel = 0;
@@ -38,8 +41,10 @@ public class Tower {
         this.damage = initialDamage;
         this.tower0Img = tower0Img; this.tower1Img = tower1Img; this.tower2Img = tower2Img;
         
+        
     }
 
+    
 
     public boolean isMouseOver(PApplet p) {
         int mouseX = p.mouseX;
@@ -178,8 +183,8 @@ public class Tower {
         }
     }
 
-
-    public void display(PApplet p) {
+    @Override
+    public void draw(PApplet p) {
         
         if (rangeUpgradeLevel >= 2 && speedUpgradeLevel >= 2 && damageUpgradeLevel >= 2) {
             p.image(tower2Img, x * App.CELLSIZE, y * App.CELLSIZE + App.TOPBAR, App.CELLSIZE, App.CELLSIZE);
@@ -211,5 +216,13 @@ public class Tower {
             damageUpgrade = false;
         }
         drawUpgradeIndications(p);
+    }
+
+    public int getX() {
+        return x;
+    }
+
+    public int getY() {
+        return y;
     }
 }

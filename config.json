@@ -2,7 +2,7 @@
   "layout": "level2.txt",
   "waves": [
     {
-      "duration": 8,
+      "duration": 3,
       "pre_wave_pause": 5,
 	  "monsters": [
         {
@@ -14,35 +14,8 @@
           "quantity": 10
         }
 	  ]
-    },
-    {
-      "duration": 5,
-      "pre_wave_pause": 10,
-      "monsters": [
-        {
-          "type": "gremlin",
-          "hp": 50,
-          "speed": 2.5,
-          "armour": 0.7,
-          "mana_gained_on_kill": 20,
-          "quantity": 15
-        }
-      ]
-    },
-    {
-      "duration": 5,
-      "pre_wave_pause": 10,
-      "monsters": [
-        {
-          "type": "gremlin",
-          "hp": 150,
-          "speed": 1.0,
-          "armour": 0.7,
-          "mana_gained_on_kill": 70,
-          "quantity": 25
-        }
-      ]
     }
+    
   ],
   "initial_tower_range": 96,
   "initial_tower_firing_speed": 1.5,
