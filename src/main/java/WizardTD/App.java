@@ -16,14 +16,15 @@ import java.util.*;
 
 public class App extends PApplet {
 
-    char[][] layout;
+    public char[][] layout;
+    // Classes
+    private Board board;
 
     //  Images of game elements
-    private PImage[][] preprocessedPaths;
-    private PImage grassImg, shrub0Img, shrub1Img, shrub2Img, shrub3Img, shrub4Img, wizardHouseImg, path0Img, path1Img, path2Img, path3Img, tower0Img, tower1Img, tower2Img, fireballImg;
+    private PImage tower0Img, tower1Img, tower2Img, fireballImg;
     public static PImage death1Img, death2Img, death3Img, death4Img;
     public static PImage[] deathImages = new PImage[5];
-    private int[][] shrubTypes = new int[BOARD_HEIGHT][BOARD_WIDTH];
+    
 
 
     //  Monsters & Waves handling
@@ -109,18 +110,10 @@ public class App extends PApplet {
         upgradeDamageButton = new Buttons(startX, startY + 5 * (buttonSize + buttonSpacing), buttonSize, "Upgrade Damage", "U3");
         manaPoolSpellButton = new Buttons(startX, startY + 6 * (buttonSize + buttonSpacing), buttonSize, "Mana Spell", "M");
 
+        board = new Board(this, layout);
+
         // Load images
-        grassImg = loadImage("src/main/resources/WizardTD/grass.png");
-        shrub0Img = loadImage("src/main/resources/WizardTD/shrub0.png");
-        shrub1Img = loadImage("src/main/resources/WizardTD/shrub1.png");
-        shrub2Img = loadImage("src/main/resources/WizardTD/shrub2.png");
-        shrub3Img = loadImage("src/main/resources/WizardTD/shrub3.png");
-        shrub4Img = loadImage("src/main/resources/WizardTD/shrub4.png");
-        wizardHouseImg = loadImage("src/main/resources/WizardTD/wizard_house.png");
-        path0Img = loadImage("src/main/resources/WizardTD/path0.png");
-        path1Img = loadImage("src/main/resources/WizardTD/path1.png");
-        path2Img = loadImage("src/main/resources/WizardTD/path2.png");
-        path3Img = loadImage("src/main/resources/WizardTD/path3.png");
+        board.setup();
         tower0Img = loadImage("src/main/resources/WizardTD/tower0.png");
         tower1Img = loadImage("src/main/resources/WizardTD/tower1.png");
         tower2Img = loadImage("src/main/resources/WizardTD/tower2.png");
@@ -131,18 +124,6 @@ public class App extends PApplet {
         death4Img = loadImage("src/main/resources/WizardTD/gremlin4.png");
         for (int i = 0; i < 5; i++) {
             deathImages[i] = loadImage("src/main/resources/WizardTD/gremlin" + (i + 1) + ".png");
-        }
-        preprocessedPaths = new PImage[layout.length][layout[0].length];
-        determinePaths();
-
-        for (int y = 0; y < BOARD_HEIGHT; y++) {
-            for (int x = 0; x < BOARD_WIDTH; x++) {
-                if (layout[y][x] == 'S') {
-                    shrubTypes[y][x] = (int) random(0, 5);
-                } /*else {
-                    shrubTypes[y][x] = -1; // -1 indicates no shrub
-                }*/
-            }
         }
         
 
@@ -255,61 +236,6 @@ public class App extends PApplet {
             }
         } catch (Exception e) {
             e.printStackTrace();
-        }
-    }
-
-
-    private void drawGameBoard() {
-        for (int y = 0; y < BOARD_HEIGHT; y++) {
-            for (int x = 0; x < BOARD_WIDTH; x++) {
-                switch (layout[y][x]) {
-                    case ' ':
-                        image(grassImg, x * CELLSIZE, y * CELLSIZE + TOPBAR, CELLSIZE, CELLSIZE);
-                        break;
-                    case 'X':
-                        PImage rotatedPathImg = preprocessedPaths[y][x];
-                        image(rotatedPathImg, x * CELLSIZE, y * CELLSIZE + TOPBAR, CELLSIZE, CELLSIZE);
-                        break;
-                    case 'S':
-                        image(grassImg, x * CELLSIZE, y * CELLSIZE + TOPBAR, CELLSIZE, CELLSIZE);
-                        break;
-                    case 'W':
-                        image(grassImg, x * CELLSIZE, y * CELLSIZE + TOPBAR, CELLSIZE, CELLSIZE);
-                        break;
-                }
-            }
-        }
-
-        // Drawing the wizard's house (drawing it separately to ensure it's on top of other tiles)
-        for (int y = 0; y < BOARD_HEIGHT; y++) {
-            for (int x = 0; x < BOARD_WIDTH; x++) {
-                if (layout[y][x] == 'S') {
-                    switch (shrubTypes[y][x]) {
-                        case 0:
-                            image(shrub0Img, x * CELLSIZE, y * CELLSIZE + TOPBAR, CELLSIZE, CELLSIZE);
-                            break;
-                        case 1:
-                            image(shrub1Img, x * CELLSIZE, y * CELLSIZE + TOPBAR, CELLSIZE, CELLSIZE);
-                            break;
-                        case 2:
-                            image(shrub2Img, x * CELLSIZE, y * CELLSIZE + TOPBAR, CELLSIZE, CELLSIZE);
-                            break;
-                        case 3:
-                            image(shrub3Img, x * CELLSIZE, y * CELLSIZE + TOPBAR, CELLSIZE, CELLSIZE);
-                            break;
-                        case 4:
-                            image(shrub4Img, x * CELLSIZE, y * CELLSIZE + TOPBAR, CELLSIZE, CELLSIZE);
-                            break;
-                    }
-                }
-                
-                else if (layout[y][x] == 'W') {
-                    // Center the 48x48 image within the 32x32 tile
-                    int xOffset = (CELLSIZE - 48) / 2;
-                    int yOffset = (CELLSIZE - 48) / 2;
-                    image(wizardHouseImg, x * CELLSIZE + xOffset, y * CELLSIZE + TOPBAR + yOffset, 48, 48);
-                }
-            }
         }
     }
 
@@ -574,70 +500,6 @@ public class App extends PApplet {
             manaRegenRate += manaRegenRate * manaPoolSpellManaGainedMult; // Increase mana regeneration rate
         }
     }
-    
-
-    private void determinePaths() {
-        PImage image = null;
-        float angle = 0;
-        for (int i = 0; i < layout.length; i++) {
-            for (int j = 0; j < layout[i].length; j++) {
-                if (layout[i][j] == 'X') {
-                    List<String> directions = new ArrayList<>();
-                    if (i > 0 && layout[i-1][j] == 'X') directions.add("above");
-                    if (i < layout.length-1 && layout[i+1][j] == 'X') directions.add("below");
-                    if (j > 0 && layout[i][j-1] == 'X') directions.add("left");
-                    if (j < layout[i].length-1 && layout[i][j+1] == 'X') directions.add("right");
-                    if (directions.size() == 1) {
-                        image = path0Img;
-                        if (directions.contains("right") || directions.contains("left")) {
-                            angle = 0;
-                        } else if (directions.contains("above") || directions.contains("below")) {
-                            angle = 90;
-                        }
-                    } else if (directions.size() == 2) {
-                        if (directions.contains("above") && directions.contains("below")) {
-                            image = path0Img;
-                            angle = 90;
-                        } else if (directions.contains("left") && directions.contains("right")) {
-                            image = path0Img;
-                            angle = 0;
-                        } else if (directions.contains("left") && directions.contains("below")) {
-                            image = path1Img;
-                            angle = 0;
-                        } else if (directions.contains("below") && directions.contains("right")) {
-                            image = path1Img;
-                            angle = 270;
-                        } else if (directions.contains("right") && directions.contains("above")) {
-                            image = path1Img;
-                            angle = 180;
-                        } else if (directions.contains("above") && directions.contains("left")) {
-                            image = path1Img;
-                            angle = 90;
-                        }
-                    } else if (directions.size() == 3) {
-                        if (!directions.contains("left")) {
-                            image = path2Img;
-                            angle = 0;
-                        } else if (!directions.contains("above")) {
-                            image = path2Img;
-                            angle = 90;
-                        } else if (!directions.contains("right")) {
-                            image = path2Img;
-                            angle = 90;
-                        } else if (!directions.contains("below")) {
-                            image = path2Img;
-                            angle = 180;
-                        }
-                    } else if (directions.size() == 4) {
-                        image = path3Img;
-                        angle = 0;
-                    }
-                    preprocessedPaths[i][j] = rotateImageByDegrees(image, angle);
-                    
-                }
-            }
-        }
-    }
 
 
     public List<int[]> findBoundaryPathTiles() {
@@ -694,7 +556,7 @@ public class App extends PApplet {
         
     
         // Draw the game board
-        drawGameBoard();
+        board.drawGameBoard(this);
 
         // Drawing the UI components
         fill(150, 108, 51);
@@ -857,43 +719,5 @@ public class App extends PApplet {
 
     public static void main(String[] args) {
         PApplet.main("WizardTD.App");
-    }
-
-
-    /**
-     * Source: https://stackoverflow.com/questions/37758061/rotate-a-buffered-image-in-java
-     * @param pimg The image to be rotated
-     * @param angle between 0 and 360 degrees
-     * @return the new rotated image
-     */
-    public PImage rotateImageByDegrees(PImage pimg, double angle) {
-        BufferedImage img = (BufferedImage) pimg.getNative();
-        double rads = Math.toRadians(angle);
-        double sin = Math.abs(Math.sin(rads)), cos = Math.abs(Math.cos(rads));
-        int w = img.getWidth();
-        int h = img.getHeight();
-        int newWidth = (int) Math.floor(w * cos + h * sin);
-        int newHeight = (int) Math.floor(h * cos + w * sin);
-
-        PImage result = this.createImage(newWidth, newHeight, RGB);
-        BufferedImage rotated = (BufferedImage) result.getNative();
-        Graphics2D g2d = rotated.createGraphics();
-        AffineTransform at = new AffineTransform();
-        at.translate((newWidth - w) / 2, (newHeight - h) / 2);
-
-        int x = w / 2;
-        int y = h / 2;
-
-        at.rotate(rads, x, y);
-        g2d.setTransform(at);
-        g2d.drawImage(img, 0, 0, null);
-        g2d.dispose();
-        for (int i = 0; i < newWidth; i++) {
-            for (int j = 0; j < newHeight; j++) {
-                result.set(i, j, rotated.getRGB(i, j));
-            }
-        }
-
-        return result;
     }
 }

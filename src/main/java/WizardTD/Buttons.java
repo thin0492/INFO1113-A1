@@ -1,7 +1,6 @@
 package WizardTD;
 
 import processing.core.PApplet;
-import WizardTD.ButtonFunctions.ManaState;
 
 public class Buttons {
     //private PApplet p;
