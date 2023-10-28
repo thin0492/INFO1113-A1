@@ -7,11 +7,11 @@ import java.util.List;
 import java.util.Random;
 
 public class Wave {
-    private float duration;  // List of durations for each wave
-    private float preWavePause;  // Time before the wave starts
-    private float preWavePauseTime; // Timer for pre wave pause
-    private float elapsedTime;  // Time since the wave started
-    private float timeSinceLastSpawn;  // Time since the last monster was spawned
+    private float duration; 
+    private float preWavePause; 
+    private float preWavePauseTime; 
+    private float elapsedTime;  
+    private float timeSinceLastSpawn; 
     private float totalMonsterCount;
 
     private List<MonsterTypeQuantity> monstersToSpawn = new ArrayList<>();

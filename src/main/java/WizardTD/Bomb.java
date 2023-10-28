@@ -4,23 +4,21 @@ import WizardTD.Interfaces.Drawable;
 import processing.core.PApplet;
 import processing.core.PImage;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class Bomb implements Drawable{
-    private PApplet p;
+
     private int x, y;
     private float damage = ConfigLoader.getBombDamage();
     private float radius = ConfigLoader.getBlastRadius();
-    private float cost = ConfigLoader.getBombCost();
     public boolean hasExploded;
     private PImage bombImg;
     private PImage[] explosionImages;
-    private int explosionFrameCounter = 0; // To track the number of frames since the explosion started
+    private int explosionFrameCounter = 0; 
     public boolean explosionFinished = false;
     
     public Bomb(int x, int y, PImage bombImg, PImage[] explosionImages, PApplet p) {
-        this.p = p;
+   
         this.x = x;
         this.y = y;
         this.hasExploded = false;
@@ -49,11 +47,10 @@ public class Bomb implements Drawable{
 
     @Override
     public void draw(PApplet p) {
+
         if (!hasExploded) {
-            // Draw the bomb before exploding
             p.image(bombImg, x * App.CELLSIZE, y * App.CELLSIZE + App.TOPBAR, App.CELLSIZE, App.CELLSIZE);
         } else if (!explosionFinished) {
-            // Draw explosion animation
             int explosionIndex = explosionFrameCounter / 4 ;
             if (explosionIndex  < explosionImages.length) {
                 float adjustedSize = 5f * 32;
@@ -63,7 +60,7 @@ public class Bomb implements Drawable{
                 explosionFrameCounter++;
             }
 
-            // Check if the explosion animation is finished
+            
             if (explosionFrameCounter >= 4 * explosionImages.length) {
                 explosionFinished = true;
             }

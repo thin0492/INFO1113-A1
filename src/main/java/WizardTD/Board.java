@@ -12,7 +12,6 @@ import java.util.*;
 import WizardTD.Interfaces.Drawable;
 
 public class Board implements Drawable{
-    //private PApplet p;
     private App app;
     private char[][] layout;
     private PImage grassImg, shrub0Img, shrub1Img, shrub2Img, shrub3Img, shrub4Img, wizardHouseImg, 
@@ -24,7 +23,6 @@ public class Board implements Drawable{
     private int BOARD_HEIGHT = App.BOARD_HEIGHT;
     private int TOPBAR = App.TOPBAR;
 
-    // Constructor
     public Board(App app, char[][] layout) {
         this.app = app;
         this.layout = layout;

@@ -5,7 +5,7 @@ import WizardTD.Interfaces.Updateable;
 import processing.core.PApplet;
 
 public class Buttons implements Drawable, Updateable{
-    //private PApplet p;
+  
     private int x, y, width, height;
     private String label;
     private String innerLabel;
@@ -32,21 +32,21 @@ public class Buttons implements Drawable, Updateable{
         p.stroke(0);
         p.strokeWeight(3);
         if (isHovered(p.mouseX, p.mouseY) && !isActive) {
-            p.fill(200); // Grey color for hover
+            p.fill(200); 
         } else if (isActive) {
-            p.fill(255, 255, 0); // Yellow color for active state
+            p.fill(255, 255, 0);
         } else {
-            p.fill(150, 108, 51); // Original color
+            p.fill(150, 108, 51);
         }
         p.rect(x, y, width, height);
         p.strokeWeight(1);
         
-        p.textSize(24);  // Larger font for inner label
+        p.textSize(24);  
         p.textAlign(PApplet.CENTER, PApplet.CENTER);
         p.fill(0);
         p.text(innerLabel, x + width/2, y + height/2);
         
-        p.textSize(12);  // Regular font for label to the right
+        p.textSize(12); 
         p.textAlign(PApplet.LEFT, PApplet.CENTER);
         
         String[] labelLines = label.split(" ");

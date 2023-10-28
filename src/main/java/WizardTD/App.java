@@ -411,7 +411,7 @@ public class App extends PApplet {
     private void activateBuildTowerModeButton() {
         if (placingTower) {
                 placingTower = false;
-                buildTowerButton.update();  // Reset if it's pressed again while active
+                buildTowerButton.update();  
             } else {
                 buildTowerButton.update();
                 placingTower = true;
@@ -422,17 +422,16 @@ public class App extends PApplet {
     private void activateManaPoolSpellButton() {
         if (currentMana >= manaPoolSpellInitialCost) {
             currentMana -= manaPoolSpellInitialCost;
-            manaPoolSpellInitialCost += manaPoolSpellCostInc; // Increase the cost for the next use
-    
-            manaCap *= manaPoolSpellCapMult; // Increase the mana cap
-            manaRegenRate += manaRegenRate * manaPoolSpellManaGainedMult; // Increase mana regeneration rate
+            manaPoolSpellInitialCost += manaPoolSpellCostInc; 
+            manaCap *= manaPoolSpellCapMult; 
+            manaRegenRate += manaRegenRate * manaPoolSpellManaGainedMult;
         }
     }
 
     public void activateBombButton(int gridX, int gridY) {
         try {
             if (layout[gridY][gridX] == 'X') {
-                Bomb bomb = new Bomb(gridX, gridY, bombImg, explosionImages, this); // Damage and radius can be adjusted
+                Bomb bomb = new Bomb(gridX, gridY, bombImg, explosionImages, this); 
                 bombs.add(bomb);
                 System.out.println(ConfigLoader.getBombCost());
                 currentMana -= ConfigLoader.getBombCost();
@@ -479,7 +478,7 @@ public class App extends PApplet {
         if (!gamePaused) {
             currentMana = min(currentMana + (manaRegenRate * gameSpeed) / FPS, manaCap);
             
-            //if (currentWaveIndex < waves.size()) {
+        
             Wave currentWave = waves.get(waves.size() - 1);
             currentWave.update((1.0f / FPS) * gameSpeed);
 
@@ -493,15 +492,9 @@ public class App extends PApplet {
                 currentWaveIndex++;
                 configLoader.loadNextWave();
 
-            } if (currentWave.isWaveOver() && isFinalWave && activeMonsters.isEmpty()) {
-                // Display "YOU WIN" text
-                textAlign(CENTER, CENTER);
-                textSize(64); // Adjust text size as needed
-                fill(0, 255, 0);
-                text("YOU WIN", width / 2, height / 2); // Position the text in the center
-            }
+            } 
         }
-        //}
+        
         
     
         // Draw the game board
@@ -519,10 +512,10 @@ public class App extends PApplet {
             Monster targetMonster = null;
             float closestDistance = Float.MAX_VALUE;
         
-            // Reduce the cooldown for the tower on every frame
+            
             tower.fireCooldown -= (1.0f / FPS) * gameSpeed;
         
-            // Find the closest monster within the tower's range
+         
             for (Monster monster : activeMonsters) {
                 if (!monster.isDying) {
                     float distance = dist(tower.x * CELLSIZE + CELLSIZE / 2, tower.y * CELLSIZE + CELLSIZE / 2 + TOPBAR, monster.getExactX() * CELLSIZE, monster.getExactY() * CELLSIZE + TOPBAR);
@@ -542,7 +535,7 @@ public class App extends PApplet {
             } 
             
 
-                // Handle each fireball for the current tower
+              
                 Iterator<Fireball> fireballIterator = tower.fireballs.iterator();
                 while (fireballIterator.hasNext()) {
                     Fireball fireball = fireballIterator.next();
@@ -551,7 +544,7 @@ public class App extends PApplet {
                     }
                     
                     if (fireball.hasReachedTarget()) {
-                        // Deal damage to the target monster
+                   
                         Monster hitMonster = fireball.targetMonster;
                         hitMonster.takeDamage(fireball.damage);
                         
@@ -577,7 +570,6 @@ public class App extends PApplet {
             
         }
     
-        // Move and draw monsters
         updateAndDrawMonsters();
         
         Iterator<Bomb> bombIterator = bombs.iterator();
@@ -607,8 +599,8 @@ public class App extends PApplet {
 
 
     public void drawWaveCounter() {
-        fill(0);  // Set text color
-        textSize(22);  // Set text size
+        fill(0); 
+        textSize(22);  
         stroke(2);
     
         String waveText = "";
@@ -617,15 +609,15 @@ public class App extends PApplet {
             Wave currentWave = waves.get(currentWaveIndex);
 
             if (currentWave.getPreWavePauseTime() < currentWave.getPreWavePause()) {
-                // Wave hasn't started yet
+                
                 float remainingTime = currentWave.getPreWavePause() - currentWave.getPreWavePauseTime();
                 waveText = "Wave " + (currentWaveIndex + 1) + " starts: " + (int)Math.max(0, Math.ceil(remainingTime));
             } else if (!currentWave.isWaveOver()) {
-                // Wave is active
+              
                 float remainingTime = currentWave.getDuration() - currentWave.getElapsedTime();
                 waveText = "Wave " + (currentWaveIndex + 1) + " ends: " + (int)Math.max(0, Math.ceil(remainingTime));
             } else {
-                // Check if this is not the last wave
+               
                 if (currentWaveIndex + 1 < waves.size()) {
                     Wave nextWave = waves.get(currentWaveIndex + 1);
                     float remainingTime = nextWave.getPreWavePause() - nextWave.getPreWavePauseTime();
@@ -633,11 +625,11 @@ public class App extends PApplet {
                 } 
             }
         } else {
-            // No more waves left
+        
             waveText = "All Waves Spawned";
         }
 
-        text(waveText, 10, 20);  // Position text in the top left corner
+        text(waveText, 10, 20); 
     }
 
 
@@ -647,26 +639,26 @@ public class App extends PApplet {
         int startX = WIDTH - barWidth - 10;
         int startY = (TOPBAR - barHeight) / 2;
 
-        // Calculate mana fill
+      
         int fillWidth = (int) (barWidth * (currentMana / manaCap));
 
-        fill(7, 222, 250);  // Blue for the filled portion
+        fill(7, 222, 250);  
         rect(startX, startY, fillWidth, barHeight);
 
-        fill(255);  // White for the unfilled portion
+        fill(255);  
         rect(startX + fillWidth, startY, barWidth - fillWidth, barHeight);
 
-        stroke(0);  // Black border for the mana bar
+        stroke(0);  
         noFill();
         rect(startX, startY, barWidth, barHeight);
 
-        // Displaying the word "MANA:" to the left of the mana bar
-        fill(0);  // Black text color
+       
+        fill(0); 
         textSize(18);
         textAlign(RIGHT, CENTER);
         text("MANA:", startX - 10, startY + barHeight / 2);
 
-        // Displaying the current mana and the max mana within the mana bar
+        
         String manaText = String.format("%.0f / %.0f", currentMana, manaCap);
         textAlign(CENTER, CENTER);
         text(manaText, startX + barWidth / 2, startY + barHeight / 2);

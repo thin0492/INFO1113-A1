@@ -5,7 +5,7 @@ import java.util.List;
 
 import WizardTD.Interfaces.Drawable;
 
-import java.util.Iterator;
+
 
 import processing.core.PApplet;
 import processing.core.PImage;
@@ -64,9 +64,9 @@ public class Tower implements Drawable{
             range += RANGE_UPGRADE_AMOUNT;
             rangeUpgradeLevel++;
             currentMana -= getUpgradeCostRange();
-            return currentMana; // Successfully upgraded
+            return currentMana; 
         }
-        return -1; // Not enough mana for upgrade
+        return -1;
     } public int getUpgradeCostRange() {
         int rangeCost = BASE_UPGRADE_COST + rangeUpgradeLevel * UPGRADE_COST_INCREMENT;
         return rangeCost;
@@ -99,21 +99,20 @@ public class Tower implements Drawable{
     }
 
     public void drawUpgradeCosts(PApplet p) {
-        int tableWidth = 100; // Width of the table
-        int tableHeight = 140; // Height of the table
-        int startX = App.WIDTH - tableWidth - 10; // Starting X position for the table
-        int startY = App.HEIGHT - tableHeight - 10; // Starting Y position for the table
-        int rowHeight = 10; // Height of each row in the table
-        int padding = 10; // Padding inside the table
+        int tableWidth = 100; 
+        int tableHeight = 140; 
+        int startX = App.WIDTH - tableWidth - 10;
+        int startY = App.HEIGHT - tableHeight - 10;
+        int rowHeight = 10; 
+        int padding = 10; 
         
-        p.fill(255); // White background
+        p.fill(255);
         p.rect(startX, startY, tableWidth, tableHeight);
         
         p.textSize(12);
-        p.fill(0); // Black text
+        p.fill(0);
         p.text("Upgrade cost", startX + padding + 35, startY + rowHeight + 5);
         
-        // Black row line
         p.line(startX, startY + 2*padding + rowHeight, startX + tableWidth, startY + 2*padding + rowHeight);
         
         if (App.upgradeDesiredRange) {
@@ -137,10 +136,9 @@ public class Tower implements Drawable{
             damageCost = 0;
         }
         
-        // Black row line
         p.line(startX, startY + 6*padding + 5*rowHeight, startX + tableWidth, startY + 6*padding + 5*rowHeight);
         
-        int totalCost = rangeCost + speedCost + damageCost; // Assuming all upgrades have the same cost for simplicity
+        int totalCost = rangeCost + speedCost + damageCost;
         p.text("Total:", startX + padding + 11, startY + 7*padding + 6*rowHeight - 3); p.text(totalCost, startX + tableWidth - padding, startY + 7*padding + 6*rowHeight - 3);
     }
 
@@ -149,35 +147,34 @@ public class Tower implements Drawable{
         int towerCenterX = x * App.CELLSIZE + App.CELLSIZE / 2;
         int towerBaseX = x * App.CELLSIZE;
         int towerCenterY = y * App.CELLSIZE + App.TOPBAR + App.CELLSIZE / 2;
-        int upgradeSymbolSize = 3; // Reduced size of the upgrade symbol
-        int spacing = 4; // Spacing between symbols
-        int xOffset = 5; // Move symbols slightly to the right
+        int upgradeSymbolSize = 3; 
+        int spacing = 4; 
+        int xOffset = 5; 
         int yOffset = 3;
-        //p.textSize(upgradeSymbolSize);  // Set text size for upgrade symbols
+        
 
-        // Determine the number of levels to display for each upgrade
         int displayRangeLevels = rangeUpgradeLevel - 2 * towerType;
         int displaySpeedLevels = speedUpgradeLevel - towerType;
         int displayDamageLevels = damageUpgradeLevel - 2 * towerType;
     
-        // Draw speed upgrade rectangle centered around the tower
+        
         if (speedUpgradeLevel > 0) {
             p.noFill();
-            p.stroke(61, 196, 245); // Blue color
-            p.strokeWeight(displaySpeedLevels); // Thickness based on upgrade level
+            p.stroke(61, 196, 245);
+            p.strokeWeight(displaySpeedLevels); 
             p.rect(towerCenterX - App.CELLSIZE / 2, towerCenterY - App.CELLSIZE / 2, App.CELLSIZE, App.CELLSIZE);
-            p.strokeWeight(1); // Resetting stroke weight
-            p.stroke(0); // Resetting color to black
+            p.strokeWeight(1);
+            p.stroke(0); 
         }
     
-        // Draw range upgrade 'O's at the top
-        p.fill(240, 70, 220); // Magenta color
+        
+        p.fill(240, 70, 220); 
         for (int i = 0; i < Math.max(0, displayRangeLevels); i++) {
             p.textSize(10);
             p.text('O', towerBaseX + xOffset + i * (upgradeSymbolSize + spacing), y * App.CELLSIZE + App.TOPBAR + upgradeSymbolSize - yOffset);
         }
     
-        // Draw damage upgrade 'X's at the bottom
+        
         for (int i = 0; i < Math.max(0, displayDamageLevels); i++) {
             p.text('X', towerBaseX + xOffset + i * (upgradeSymbolSize + spacing), (y + 1) * App.CELLSIZE + App.TOPBAR - upgradeSymbolSize - yOffset + 2);
         }
@@ -199,15 +196,14 @@ public class Tower implements Drawable{
 
         if (isMouseOver(p)) {
             p.noFill();
-            p.stroke(255, 255, 0); // Yellow colour
+            p.stroke(255, 255, 0); 
             p.ellipse(x * App.CELLSIZE + App.CELLSIZE / 2, y * App.CELLSIZE + App.CELLSIZE / 2 + App.TOPBAR, range * 2, range * 2);
-            p.stroke(0); // Reset to black colour
+            p.stroke(0); 
             if (App.upgradeDesiredRange || App.upgradeDesiredSpeed || App.upgradeDesiredDamage) {
                drawUpgradeCosts(p);
             }
             
         }
-        // Here you'd add the visual indications for upgrades.
         if (rangeUpgrade) {
             rangeUpgrade = false;
         } if (speedUpgrade) {

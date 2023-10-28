@@ -50,16 +50,14 @@ public class ConfigLoader {
         try {
             String[] lines = p.loadStrings(path);
             for (int i = 0; i < lines.length; i++) {
-                //  If a line is shorter than 20 characters, pad it with spaces
+                
                 while (lines[i].length() < BOARD_WIDTH) {
                     lines[i] += " ";
                 }
                 
-                //  Take only the first 20 characters from the line
                 layout[i] = lines[i].substring(0, BOARD_WIDTH).toCharArray();
             }
             
-            //  If there are less than 20 lines, fill the remaining rows with spaces
             for (int i = lines.length; i < BOARD_HEIGHT; i++) {
                 Arrays.fill(layout[i], ' ');
             }
